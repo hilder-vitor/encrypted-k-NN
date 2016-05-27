@@ -74,6 +74,16 @@ vector<VEC> random_VEC(unsigned int number_of_vectors, unsigned int dimension, f
 		v[i].name = i;
 		for (unsigned int j = 0; j <  dimension; j++){
 			v[i].data.push_back(rand_gen());
+			if (v[i].data[j] < 0)
+				v[i].data[j] = rand_gen();
+			if (v[i].data[j] < 0)
+				v[i].data[j] = rand_gen();
+			if (v[i].data[j] < 0)
+				v[i].data[j] = rand_gen();
+			if (v[i].data[j] < 0)
+				v[i].data[j] = rand_gen();
+			if (v[i].data[j] < 0)
+				exit(1);
 		}
 	}
 	return v;
@@ -130,19 +140,6 @@ vector<DISTANCE> compute_distances(vector<T> vecs, T query){
 }
 
 
-/*
-void teste_vizinhancas(OPE& o, unsigned int number_of_vectors){
-	unsigned int N = number_of_vectors;
-	vector<VEC> vecs = random_VEC(N, 2);
-	vector<ENC_VEC> enc_vecs = encryptVEC(o, vecs);
-	for (unsigned int i = 0; i < N; i++){
-		cout << vecs[i] << endl;
-		cout << enc_vecs[i] << endl;
-		cout << endl;
-	}
-}
-*/
-
 bool distance_comparison(DISTANCE d1, DISTANCE d2){
 	return d1.dist < d2.dist;
 }
@@ -192,7 +189,7 @@ double test_distribution(OPE& o, unsigned int N, unsigned int P, unsigned int k,
 		sort_distances(enc_distances);
 
 		double percent = k_neighborhood_intersection(original_distances, enc_distances, k);
-		if (1 == percent)
+		if (0.9999 <= percent && percent <= 1.0001)
 			ok++;
 		else{
 			not_ok++;
@@ -203,6 +200,91 @@ double test_distribution(OPE& o, unsigned int N, unsigned int P, unsigned int k,
 		return avg_not_ok / not_ok;
 	return -1;
 }
+
+void test_cauchy_distribution(OPE& o){
+	unsigned int N;
+	unsigned int P;
+	unsigned int k;
+	double location_param;
+	double scale_param;
+
+	std::default_random_engine generator(time(0));
+
+	double percent;
+	unsigned int ok;
+	unsigned int not_ok;
+	for (N = 100; N < 1100; N += 100){
+		for (P = 10; P < N/2 && P <= 100; P += 5){
+			for (location_param = 100.0; location_param <= 360; location_param += 35){
+				for (scale_param = 5; scale_param <= 50; scale_param += 15){
+					for (k = 1; k < 9; k++){
+						std::cauchy_distribution<double> distribution(location_param, scale_param);
+						function <int()> my_cauchy_rand = [&generator, &distribution](){ return distribution(generator);};
+						double avg_not_ok = test_distribution(o, N, P, k, my_cauchy_rand, ok, not_ok);
+						cout << N << "," << P << "," << location_param << "," << scale_param << "," << k << "," << ok << "," << not_ok << "," << avg_not_ok << endl;
+					}
+				}
+			}
+		}
+	}
+}
+
+
+
+void test_gamma_distribution(OPE& o){
+	unsigned int N;
+	unsigned int P;
+	unsigned int k;
+	double gamma_k = 0.5;
+	double gamma_theta = 0.5;
+
+	std::default_random_engine generator(time(0));
+
+	double percent;
+	unsigned int ok;
+	unsigned int not_ok;
+	for (; N < 1100; N += 100){
+		for (P = 10; P < N/2 && P <= 100; P += 5){
+			for (gamma_k = 0.5; gamma_k <= 9.1; gamma_k += 0.5){
+				for (gamma_theta = 0.5; gamma_theta <= 2.1; gamma_theta += 0.5){
+					for (k = 1; k < 9; k++){
+						gamma_distribution<double> distribution(gamma_k, gamma_theta);
+						function <int()> my_gamma_rand = [&generator, &distribution](){ return distribution(generator);};
+						double avg_not_ok = test_distribution(o, N, P, k, my_gamma_rand, ok, not_ok);
+						cout << N << "," << P << "," << gamma_k << "," << gamma_theta << "," << k << "," << ok << "," << not_ok << "," << avg_not_ok << endl;
+					}
+				}
+			}
+		}
+	}
+}
+
+
+void test_geometric_distribution(OPE& o){
+	unsigned int N;
+	unsigned int P;
+	unsigned int k;
+	double p;
+
+	std::default_random_engine generator(time(0));
+
+	double percent;
+	unsigned int ok;
+	unsigned int not_ok;
+	for (N = 100; N < 1100; N += 100){
+		for (P = 10; P < N/2 && P <= 100; P += 5){
+			for (p = 0.1; p < 0.75; p += 0.15){
+				for (k = 1; k < 9; k++){
+					std::geometric_distribution<int> distribution(p);
+					function <int()> my_geometric_rand = [&generator, &distribution](){ return distribution(generator);};
+					double avg_not_ok = test_distribution(o, N, P, k, my_geometric_rand, ok, not_ok);
+					cout << N << "," << P << "," << p << "," << k << "," << ok << "," << not_ok << "," << avg_not_ok << endl;
+				}
+			}
+		}
+	}
+}
+
 
 void test_normal_distribution(OPE& o){
 	unsigned int N = 100;
@@ -232,11 +314,41 @@ void test_normal_distribution(OPE& o){
 	}
 }
 
+
+void test_uniform_distribution(OPE& o){
+	unsigned int N;
+	unsigned int P;
+	unsigned int k;
+	int uniform_a;
+	int uniform_b;
+
+	std::default_random_engine generator(time(0));
+
+	double percent;
+	unsigned int ok;
+	unsigned int not_ok;
+	for (; N < 1100; N += 100){
+		for (P = 10; P < N/2 && P <= 100; P += 5){
+			for (uniform_a = 0; uniform_a <= 500 ; uniform_a += 100){
+				for (uniform_b = uniform_a + 10; uniform_b <= 1500 ; uniform_b = uniform_b*2 + 15){
+					for (k = 1; k < 9; k++){
+						std::uniform_int_distribution<int> distribution(uniform_a, uniform_b);
+						function <int()> my_uniform_rand = [&generator, &distribution](){ return distribution(generator);};
+						double avg_not_ok = test_distribution(o, N, P, k, my_uniform_rand, ok, not_ok);
+						cout << N << "," << P << "," << uniform_a << "," << uniform_b << "," << k << "," << ok << "," << not_ok << "," << avg_not_ok << endl;
+					}
+				}
+			}
+		}
+	}
+}
+
+
 int
 main(int argc, char **argv)
 {
 	if (argc < 2){
-		cout << "ERROR: usage\n   " << argv[0] << " <dimension> <P> <C>" << endl;
+		cout << "ERROR: usage\n   " << argv[0] << " <distribution> <P> <C>" << endl;
 		cout << "    <P>: the length of plaintext range (plaintexts are in [0, 2**P - 1])" << endl;
 		cout << "    <C>: the length of ciphertext range (ciphertexts are in [0, 2**C - 1])" << endl;
 		return 0;
@@ -247,8 +359,13 @@ main(int argc, char **argv)
 	// ciphertext range's length in bits (ciphertexts are in [0, 2**C[
 	unsigned int C = (unsigned int) stoi(argv[2]);
 
-	OPE o("My v3Ry $TR0NG Key", P, C);
+	OPE o("A_ v3Ry $TR0NG Key", P, C);
 
+	test_cauchy_distribution(o);
+	test_uniform_distribution(o);
+	test_gamma_distribution(o);
+	test_geometric_distribution(o);
 	test_normal_distribution(o);
+
 	return 0;
 }
