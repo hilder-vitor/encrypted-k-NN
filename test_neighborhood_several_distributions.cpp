@@ -8,6 +8,7 @@
 #include <random>
 #include <functional>
 #include <algorithm>
+#include <unordered_map>
 
 using namespace std;
 using namespace NTL;
@@ -180,7 +181,7 @@ double test_distribution(OPE& o, unsigned int N, unsigned int P, unsigned int k,
 
 	vector<ENC_VEC> enc_instances = encryptVEC (o, instances);
 	vector<ENC_VEC> enc_queries = encryptVEC (o, queries);
-
+	
 	double avg_not_ok = 0.0;
 	for (unsigned int i = 0; i < number_of_tests; i++){
 		vector<DISTANCE> original_distances =  compute_distances(instances, queries[i]);
@@ -213,7 +214,7 @@ void test_cauchy_distribution(OPE& o){
 	double percent;
 	unsigned int ok;
 	unsigned int not_ok;
-	for (N = 100; N < 1100; N += 100){
+	for (N = 70; N < 1100; N += 100){
 		for (P = 10; P < N/2 && P <= 100; P += 5){
 			for (location_param = 100.0; location_param <= 360; location_param += 35){
 				for (scale_param = 5; scale_param <= 50; scale_param += 15){
@@ -314,6 +315,59 @@ void test_normal_distribution(OPE& o){
 	}
 }
 
+void test_negative_binomial_distribution(OPE& o){
+	unsigned int N;
+	unsigned int P;
+	unsigned int k;
+	int tentatives;
+	double success_p;
+
+	std::default_random_engine generator(time(0));
+
+	double percent;
+	unsigned int ok;
+	unsigned int not_ok;
+	for (; N < 1100; N += 100){
+		for (P = 10; P < N/2 && P <= 100; P += 5){
+			for (tentatives = 3; tentatives <= 13; tentatives += 2){
+				for (success_p = 0.1; success_p <= 0.9 ; success_p += 0.1){
+					for (k = 1; k < 9; k++){
+						std::negative_binomial_distribution<int> distribution(tentatives, success_p);
+						function <int()> my_negative_binomial_rand = [&generator, &distribution](){ return distribution(generator);};
+						double avg_not_ok = test_distribution(o, N, P, k, my_negative_binomial_rand, ok, not_ok);
+						cout << N << "," << P << "," << tentatives << "," << success_p << "," << k << "," << ok << "," << not_ok << "," << avg_not_ok << endl;
+					}
+				}
+			}
+		}
+	}
+}
+
+void test_poisson_distribution(OPE& o){
+	unsigned int N;
+	unsigned int P;
+	unsigned int k;
+	double mean;
+
+	std::default_random_engine generator(time(0));
+
+	double percent;
+	unsigned int ok;
+	unsigned int not_ok;
+	for (N = 25; N < 1100; N += 100){
+		for (P = 3; P < N/2 && P <= 100; P += 5){
+			for (mean = 2.0; mean <= 30.0; mean = 0.5 + 2*mean ){
+				for (k = 1; k < 9; k++){
+					poisson_distribution<int> distribution(mean);
+					function <int()> my_poisson_rand = [&generator, &distribution](){ return distribution(generator);};
+					double avg_not_ok = test_distribution(o, N, P, k, my_poisson_rand, ok, not_ok);
+					cout << N << "," << P << "," << mean << "," << k << "," << ok << "," << not_ok << "," << avg_not_ok << endl;
+				}
+			}
+		}
+	}
+}
+
 
 void test_uniform_distribution(OPE& o){
 	unsigned int N;
@@ -327,8 +381,8 @@ void test_uniform_distribution(OPE& o){
 	double percent;
 	unsigned int ok;
 	unsigned int not_ok;
-	for (; N < 1100; N += 100){
-		for (P = 10; P < N/2 && P <= 100; P += 5){
+	for (N = 10; N < 1100; N += 100){
+		for (P = 5; P < N/2 && P <= 100; P += 7){
 			for (uniform_a = 0; uniform_a <= 500 ; uniform_a += 100){
 				for (uniform_b = uniform_a + 10; uniform_b <= 1500 ; uniform_b = uniform_b*2 + 15){
 					for (k = 1; k < 9; k++){
@@ -344,28 +398,34 @@ void test_uniform_distribution(OPE& o){
 }
 
 
-int
-main(int argc, char **argv)
-{
-	if (argc < 2){
-		cout << "ERROR: usage\n   " << argv[0] << " <distribution> <P> <C>" << endl;
-		cout << "    <P>: the length of plaintext range (plaintexts are in [0, 2**P - 1])" << endl;
-		cout << "    <C>: the length of ciphertext range (ciphertexts are in [0, 2**C - 1])" << endl;
+int main(int argc, char **argv) {
+	if (argc < 1){
+		cout << "ERROR: usage\n   " << argv[0] << " <distribution>" << endl;
 		return 0;
 	}
 
-	// plaintext range's length in bits (plaintexts are in [0, 2**P[
-	unsigned int P = (unsigned int) stoi(argv[1]);
-	// ciphertext range's length in bits (ciphertexts are in [0, 2**C[
-	unsigned int C = (unsigned int) stoi(argv[2]);
+	unordered_map<string, function<void(OPE&)> > implemented_distribution =
+				{{"cauchy", test_cauchy_distribution},
+				 {"gamma", test_gamma_distribution},
+				 {"geometric", test_geometric_distribution},
+				 {"negative", test_negative_binomial_distribution},
+				 {"normal", test_normal_distribution},
+				 {"poisson", test_poisson_distribution},
+				 {"uniform", test_uniform_distribution}};
 
+	// plaintext range's length in bits (plaintexts are in [0, 2**P[
+	unsigned int P = 32;
+	// ciphertext range's length in bits (ciphertexts are in [0, 2**C[
+	unsigned int C = 33;
 	OPE o("A_ v3Ry $TR0NG Key", P, C);
 
-	test_cauchy_distribution(o);
-	test_uniform_distribution(o);
-	test_gamma_distribution(o);
-	test_geometric_distribution(o);
-	test_normal_distribution(o);
+	string chosen_distribution(argv[1]);
+
+	if (implemented_distribution[chosen_distribution]){
+		implemented_distribution[chosen_distribution](o);
+	}else{
+		cout << chosen_distribution << " not implemented." << endl;
+	}
 
 	return 0;
 }
