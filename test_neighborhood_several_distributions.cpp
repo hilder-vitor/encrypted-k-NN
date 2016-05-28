@@ -244,7 +244,7 @@ void test_gamma_distribution(OPE& o){
 	double percent;
 	unsigned int ok;
 	unsigned int not_ok;
-	for (; N < 1100; N += 100){
+	for (N = 35; N < 1100; N += 100){
 		for (P = 10; P < N/2 && P <= 100; P += 5){
 			for (gamma_k = 0.5; gamma_k <= 9.1; gamma_k += 0.5){
 				for (gamma_theta = 0.5; gamma_theta <= 2.1; gamma_theta += 0.5){
@@ -327,7 +327,7 @@ void test_negative_binomial_distribution(OPE& o){
 	double percent;
 	unsigned int ok;
 	unsigned int not_ok;
-	for (; N < 1100; N += 100){
+	for (N = 42; N < 1100; N += 103){
 		for (P = 10; P < N/2 && P <= 100; P += 5){
 			for (tentatives = 3; tentatives <= 13; tentatives += 2){
 				for (success_p = 0.1; success_p <= 0.9 ; success_p += 0.1){
@@ -399,7 +399,7 @@ void test_uniform_distribution(OPE& o){
 
 
 int main(int argc, char **argv) {
-	if (argc < 1){
+	if (argc < 2){
 		cout << "ERROR: usage\n   " << argv[0] << " <distribution>" << endl;
 		return 0;
 	}
@@ -421,10 +421,13 @@ int main(int argc, char **argv) {
 
 	string chosen_distribution(argv[1]);
 
-	if (implemented_distribution[chosen_distribution]){
+	if (implemented_distribution.count(chosen_distribution)){
 		implemented_distribution[chosen_distribution](o);
 	}else{
-		cout << chosen_distribution << " not implemented." << endl;
+		cout << chosen_distribution << " not implemented yet." << endl << "Your options are:" << endl;
+		for(auto kv : implemented_distribution) {
+			cout << "    " << kv.first << endl;
+		}
 	}
 
 	return 0;
