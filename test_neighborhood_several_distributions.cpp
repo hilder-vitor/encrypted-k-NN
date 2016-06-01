@@ -69,23 +69,34 @@ std::ostream& operator<<(std::ostream& os, const vector<T>& v) {
 	cout << endl;
 }
 
+template <typename T> 
+void add_min_value_to_exclude_negatives(vector<T>& v){
+	bool negative = false;
+	unsigned int N = v.size();
+	
+	T min_val = v[0];
+	for (unsigned int j = 1; j < N; j++){
+		if (v[j] < 0)
+			negative = true;
+			
+		if (v[j] < min_val)
+			min_val = v[j];	
+	}
+	if (negative){
+		for (unsigned int j = 0; j < N; j++){
+			v[j] = v[j] + min_val;	
+		}	
+	}
+}
+
 vector<VEC> random_VEC(unsigned int number_of_vectors, unsigned int dimension, function <int()> rand_gen){
 	vector<VEC> v(number_of_vectors);
 	for (unsigned int i = 0; i < number_of_vectors; i++){
 		v[i].name = i;
 		for (unsigned int j = 0; j <  dimension; j++){
 			v[i].data.push_back(rand_gen());
-			if (v[i].data[j] < 0)
-				v[i].data[j] = rand_gen();
-			if (v[i].data[j] < 0)
-				v[i].data[j] = rand_gen();
-			if (v[i].data[j] < 0)
-				v[i].data[j] = rand_gen();
-			if (v[i].data[j] < 0)
-				v[i].data[j] = rand_gen();
-			if (v[i].data[j] < 0)
-				exit(1);
 		}
+		add_min_value_to_exclude_negatives(v[i].data);
 	}
 	return v;
 }
@@ -222,7 +233,7 @@ void test_cauchy_distribution(OPE& o){
 						std::cauchy_distribution<double> distribution(location_param, scale_param);
 						function <int()> my_cauchy_rand = [&generator, &distribution](){ return distribution(generator);};
 						double avg_not_ok = test_distribution(o, N, P, k, my_cauchy_rand, ok, not_ok);
-						cout << N << "," << P << "," << location_param << "," << scale_param << "," << k << "," << ok << "," << not_ok << "," << avg_not_ok << endl;
+						cout << "N=" << N << "," << "P=" << P << "," << location_param << "," << scale_param << "," << "k=" << k << "," << "ok=" << ok << "," << not_ok << "," << avg_not_ok << endl;
 					}
 				}
 			}
@@ -252,7 +263,7 @@ void test_gamma_distribution(OPE& o){
 						gamma_distribution<double> distribution(gamma_k, gamma_theta);
 						function <int()> my_gamma_rand = [&generator, &distribution](){ return distribution(generator);};
 						double avg_not_ok = test_distribution(o, N, P, k, my_gamma_rand, ok, not_ok);
-						cout << N << "," << P << "," << gamma_k << "," << gamma_theta << "," << k << "," << ok << "," << not_ok << "," << avg_not_ok << endl;
+						cout << "N=" << N << "," << "P=" << P << "," << gamma_k << "," << gamma_theta << "," << "k=" << k << "," << "ok=" << ok << "," << not_ok << "," << avg_not_ok << endl;
 					}
 				}
 			}
@@ -279,7 +290,7 @@ void test_geometric_distribution(OPE& o){
 					std::geometric_distribution<int> distribution(p);
 					function <int()> my_geometric_rand = [&generator, &distribution](){ return distribution(generator);};
 					double avg_not_ok = test_distribution(o, N, P, k, my_geometric_rand, ok, not_ok);
-					cout << N << "," << P << "," << p << "," << k << "," << ok << "," << not_ok << "," << avg_not_ok << endl;
+					cout << "N=" << N << "," << "P=" << P << "," << p << "," << "k=" << k << "," << "ok=" << ok << "," << not_ok << "," << avg_not_ok << endl;
 				}
 			}
 		}
@@ -307,7 +318,7 @@ void test_normal_distribution(OPE& o){
 						std::normal_distribution<double> distribution(gaussian_avg, gaussian_std);
 						function <int()> my_gaussian_rand = [&generator, &distribution](){ return distribution(generator);};
 						double avg_not_ok = test_distribution(o, N, P, k, my_gaussian_rand, ok, not_ok);
-						cout << N << "," << P << "," << gaussian_avg << "," << gaussian_std << "," << k << "," << ok << "," << not_ok << "," << avg_not_ok << endl;
+						cout << "N=" << N << "," << "P=" << P << "," << gaussian_avg << "," << gaussian_std << "," << "k=" << k << "," << "ok=" << ok << "," << not_ok << "," << avg_not_ok << endl;
 					}
 				}
 			}
@@ -335,7 +346,7 @@ void test_negative_binomial_distribution(OPE& o){
 						std::negative_binomial_distribution<int> distribution(tentatives, success_p);
 						function <int()> my_negative_binomial_rand = [&generator, &distribution](){ return distribution(generator);};
 						double avg_not_ok = test_distribution(o, N, P, k, my_negative_binomial_rand, ok, not_ok);
-						cout << N << "," << P << "," << tentatives << "," << success_p << "," << k << "," << ok << "," << not_ok << "," << avg_not_ok << endl;
+						cout << "N=" << N << "," << "P=" << P << "," << tentatives << "," << success_p << "," << "k=" << k << "," << "ok=" << ok << "," << not_ok << "," << avg_not_ok << endl;
 					}
 				}
 			}
@@ -361,7 +372,7 @@ void test_poisson_distribution(OPE& o){
 					poisson_distribution<int> distribution(mean);
 					function <int()> my_poisson_rand = [&generator, &distribution](){ return distribution(generator);};
 					double avg_not_ok = test_distribution(o, N, P, k, my_poisson_rand, ok, not_ok);
-					cout << N << "," << P << "," << mean << "," << k << "," << ok << "," << not_ok << "," << avg_not_ok << endl;
+					cout << "N=" << N << "," << "P=" << P << "," << mean << "," << "k=" << k << "," << "ok=" << ok << "," << not_ok << "," << avg_not_ok << endl;
 				}
 			}
 		}
@@ -389,7 +400,7 @@ void test_uniform_distribution(OPE& o){
 						std::uniform_int_distribution<int> distribution(uniform_a, uniform_b);
 						function <int()> my_uniform_rand = [&generator, &distribution](){ return distribution(generator);};
 						double avg_not_ok = test_distribution(o, N, P, k, my_uniform_rand, ok, not_ok);
-						cout << N << "," << P << "," << uniform_a << "," << uniform_b << "," << k << "," << ok << "," << not_ok << "," << avg_not_ok << endl;
+						cout << "N=" << N << "," << "P=" << P << "," << uniform_a << "," << uniform_b << "," << "k=" << k << "," << "ok=" << ok << "," << not_ok << "," << avg_not_ok << endl;
 					}
 				}
 			}
