@@ -1,4 +1,4 @@
-#include "ope-from-cryptodb/lib/ope.hh"
+#include "lib/ope/lib/ope.hh"
 #include <string>
 #include <NTL/ZZ.h>
 #include <NTL/RR.h>
