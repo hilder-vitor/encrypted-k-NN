@@ -9,6 +9,11 @@
 
 using namespace NTL;
 
+
+void set_k(unsigned int neighbourhood_size){
+	k = (neighbourhood_size == 0 ? 1 : neighbourhood_size);
+}
+
 void HomomorphicWeightedKnn::compute_all_distances(const EncryptedDataInstance& query){
 	for (unsigned int i = 0; i < instances.size(); i++){
 		instances[i].set_distance(query);
@@ -21,15 +26,30 @@ void HomomorphicWeightedKnn::sort_by_distance(){
 	sort(instances.begin(), instances.end());
 }
 
-double HomomorphicWeightedKnn::sum_of_inverse_distances(){
-	RR total;
-	total = 0;
+RealNumberCiphertext HomomorphicWeightedKnn::accumulate_classes(){
+	double total = sum_of_inverse_distances();
+	RealNumberCiphertext class_assigned = yashe.encrypt(yashe.encode(0.0));
 	for (unsigned int i = 0; i < k; i++){
-		RR inv_dist = MakeRR(instances[i].get_distance(), 0);
-		inv_dist = 1.0 / inv_dist;
-		total += inv_dist;
+		double weight = inverse_of(instances[i].get_distance());
+		weight /= total;
+		// XXX: no need for CRT because coefficients are 0 or 1
+		RealNumberPlaintext plain_weight = yashe.encode(weight);
+		class_assigned += plain_weight * instances[i].get_class();		
 	}
-	return conv<double>(total);
+	return class_assigned;
+}
+
+double inverse_of(ZZ number){
+	RR number_RR = MakeRR(number_RR, 0);
+	return conv<double>(1.0 / number_RR);
+}
+
+double HomomorphicWeightedKnn::sum_of_inverse_distances(){
+	double total = 0.0;
+	for (unsigned int i = 0; i < k; i++){
+		total += inverse_of(instances[i].get_distance());
+	}
+	return total;
 }
 
 HomomorphicWeightedKnn::HomomorphicWeightedKnn(unsigned int _k, const vector<EncryptedDataInstance>& _data, const Yashe& public_key, const CoefficientwiseCRT& _crt) 
@@ -41,7 +61,5 @@ HomomorphicWeightedKnn::HomomorphicWeightedKnn(unsigned int _k, const vector<Enc
 RealNumberCiphertext HomomorphicWeightedKnn::classify(const EncryptedDataInstance& query){
 	compute_all_distances(query);
 	sort_by_distance();
-	double total = sum_of_inverse_distances();
-
-	/* XXX: acumulate the distances */
+	return accumulate_classes();
 }

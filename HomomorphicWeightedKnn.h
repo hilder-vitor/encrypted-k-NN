@@ -28,6 +28,8 @@ class HomomorphicWeightedKnn {
 
 	RealNumberCiphertext classify(const EncryptedDataInstance& query);
 
+	void set_k(unsigned int neighbourhood_size);
+
 };
 
 #endif

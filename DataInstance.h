@@ -21,7 +21,7 @@ class DataInstance {
 	int get_id() const;
 	int get_class() const;
 
-	int size() const;
+	int size() const; // the size of the data vector
 
 	bool operator<(const DataInstance&) const;
 	
