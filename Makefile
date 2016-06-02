@@ -1,6 +1,6 @@
 DIR_OPE=lib/ope/lib/
 
-all: example DataInstance.o EncryptedDataInstance.o
+all: example HomomorphicWeightedKnn.o DataInstance.o EncryptedDataInstance.o
 
 
 example: test_neighborhood_several_distributions.cpp $(DIR_OPE)ope.a
@@ -11,6 +11,10 @@ DataInstance.o: DataInstance.cpp DataInstance.h
 
 EncryptedDataInstance.o: EncryptedDataInstance.cpp EncryptedDataInstance.h
 	g++ -c EncryptedDataInstance.cpp -std=c++11  -o EncryptedDataInstance.o
+
+HomomorphicWeightedKnn.o:  HomomorphicWeightedKnn.cpp  HomomorphicWeightedKnn.h EncryptedDataInstance.o
+	g++ -c  HomomorphicWeightedKnn.cpp -std=c++11  -o  HomomorphicWeightedKnn.o
+
 
 
 
