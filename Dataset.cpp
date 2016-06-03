@@ -78,14 +78,6 @@ unsigned int Dataset::instances_dimensions(){
 	return training_data[0].size();
 }
 
-const vector<DataInstance>& Dataset::number_of_training_instances(){
-	return training_data;
-}
-
-const vector<DataInstance>& Dataset::number_of_testing_instances(){
-	return testing_data;
-}
-
 std::ostream& operator<<(std::ostream& os, const Dataset& data){
 	os << "Training:" << endl;
 	os << data.training_instances() << endl;

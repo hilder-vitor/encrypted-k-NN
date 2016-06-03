@@ -1,4 +1,5 @@
 #include "lib/ope/lib/ope.hh"
+#include "lib/yashe/src/Yashe.h"
 #include <NTL/ZZ.h>
 
 int main(int argc, char **argv) {
@@ -15,6 +16,9 @@ int main(int argc, char **argv) {
 	unsigned int C = 33;
 	OPE o("A_ v3Ry $TR0NG Key", P, C);
 
+	Dataset data("simple5x3");
+
+	cout << data << endl;
 
 
 }

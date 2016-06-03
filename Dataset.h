@@ -23,10 +23,6 @@ class Dataset {
 
 	unsigned int instances_dimensions();
 
-	const vector<DataInstance>& Dataset::number_of_training_instances();
-
-	const vector<DataInstance>& Dataset::number_of_testing_instances();
-
 };	
 
 friend std::ostream& operator<<(std::ostream&, const Dataset&);

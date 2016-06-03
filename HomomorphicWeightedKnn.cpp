@@ -10,7 +10,7 @@
 using namespace NTL;
 
 
-void set_k(unsigned int neighbourhood_size){
+void HomomorphicWeightedKnn::set_k(unsigned int neighbourhood_size){
 	k = (neighbourhood_size == 0 ? 1 : neighbourhood_size);
 }
 
@@ -53,7 +53,7 @@ double HomomorphicWeightedKnn::sum_of_inverse_distances(){
 }
 
 HomomorphicWeightedKnn::HomomorphicWeightedKnn(unsigned int _k, const vector<EncryptedDataInstance>& _data, const Yashe& public_key, const CoefficientwiseCRT& _crt) 
-	: k(_k), instances(_data), pk(public_key), crt(_crt) {
+	: k(_k), instances(_data), yashe(public_key), crt(_crt) {
 	
 }
 
