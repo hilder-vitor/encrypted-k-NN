@@ -42,12 +42,13 @@ std::ostream& operator<<(std::ostream& os, const DataInstance& v){
 	os << v.get_id() << " --> [";
 	unsigned int P = v.size();
 	if (0 == P){
-		os << "]" << endl;
+		os << "]";
 	}else{
 		for (unsigned int i = 0; i < P - 1; i++){
 			os << v[i] << ", ";
 		}
-		os << v[P - 1] << "]" << endl;
+		os << v[P - 1] << "]";
 	}
+	os << " class: " << v.get_class() << endl;
 	return os;
 }
