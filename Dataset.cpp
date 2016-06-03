@@ -31,7 +31,7 @@ void load_data(const std::string& filename, vector<DataInstance>& destination){
 		exit(3);
 	}
 
-	destination.resize(N);
+	destination.reserve(N);
 	vector<int> data_single_instance(P);
 
 	// read the datamatrix
@@ -44,7 +44,7 @@ void load_data(const std::string& filename, vector<DataInstance>& destination){
 		}
 		// read the class
 		fscanf(file, "%d", &d);
-		destination[i] = DataInstance(i, data_single_instance, d);
+		destination.push_back(DataInstance(i, data_single_instance, d));
 	}
 
 	if (! passed){
@@ -79,10 +79,17 @@ unsigned int Dataset::instances_dimensions(){
 }
 
 std::ostream& operator<<(std::ostream& os, const Dataset& data){
-	os << "Training:" << endl;
-	os << data.training_instances() << endl;
-	os << "Testing:" << endl;
-	os << data.testing_instances() << endl;
+	unsigned int N = data.training_data.size();
+	unsigned int P = data.training_data[0].size();
+	os << "Training:  (" << N << "x" << P << ")" << endl;
+	for (unsigned int i = 0; i < N; i++)
+		os << data.training_data[i] << endl;
+
+
+	N = data.testing_data.size();
+	os << "Testing:  (" << N << "x" << P << ")" << endl;
+	for (unsigned int i = 0; i < N; i++)
+		os << data.testing_data[i] << endl;
 	
 	return os;
 }

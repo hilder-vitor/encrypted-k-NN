@@ -1,11 +1,11 @@
 #ifndef YASHE__DATASET__CLASS
 #define YASHE__DATASET__CLASS
 
-
-
 /*
    Class to model a dataset to kNN
 */
+
+#include "DataInstance.h"
 
 #include <vector>
 #include <iostream>
@@ -25,6 +25,6 @@ class Dataset {
 
 };	
 
-friend std::ostream& operator<<(std::ostream&, const Dataset&);
+std::ostream& operator<<(std::ostream&, const Dataset&);
 
 #endif
