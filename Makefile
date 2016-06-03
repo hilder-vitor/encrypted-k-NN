@@ -1,6 +1,8 @@
 DIR_OPE=lib/ope/lib/
+DIR_YASHE=lib/yashe/src/
+DOT_O=DataInstance.o Dataset.o EncryptedDataInstance.o HomomorphicWeightedKnn.o
 
-all: example HomomorphicWeightedKnn.o DataInstance.o EncryptedDataInstance.o Dataset.o main
+all: example $(DOT_O) main
 
 
 example: test_neighborhood_several_distributions.cpp $(DIR_OPE)ope.a
@@ -15,11 +17,11 @@ EncryptedDataInstance.o: EncryptedDataInstance.cpp EncryptedDataInstance.h
 HomomorphicWeightedKnn.o:  HomomorphicWeightedKnn.cpp  HomomorphicWeightedKnn.h EncryptedDataInstance.o
 	g++ -c  HomomorphicWeightedKnn.cpp -std=c++11  -o  HomomorphicWeightedKnn.o
 
-Dataset.o: Dataset.h Dataset.cpp
+Dataset.o: Dataset.h Dataset.cpp DataInstance.o
 	g++ -c  Dataset.cpp -std=c++11  -o  Dataset.o
 
-main: WeightedKnnClient.cpp Dataset.o WeightedKnnClient.h HomomorphicWeightedKnn.o
-	g++ WeightedKnnClient.cpp -std=c++11  -o main $(DIR_OPE)ope.a -lntl -lgmp  -lcrypto
+main: WeightedKnnClient.cpp Dataset.o HomomorphicWeightedKnn.o 
+	g++ WeightedKnnClient.cpp $(DOT_O) -std=c++11  -o main $(DIR_OPE)ope.a $(DIR_YASHE)yashe.a -lntl -lgmp -lgmpxx -lcrypto -lm -lmpfr -lflint -pthread -fopenmp
 
 
 
@@ -29,5 +31,5 @@ $(DIR_OPE)ope.a:
 
 clean:
 	rm -f test_distributions main
-	rm -f *.o
+	rm -f $(DOT_O)
 	make clean -C $(DIR_OPE)

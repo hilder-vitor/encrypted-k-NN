@@ -26,6 +26,11 @@ void HomomorphicWeightedKnn::sort_by_distance(){
 	sort(instances.begin(), instances.end());
 }
 
+double inverse_of(ZZ number){
+	RR number_RR = MakeRR(number, 0);
+	return conv<double>(1.0 / number_RR);
+}
+
 RealNumberCiphertext HomomorphicWeightedKnn::accumulate_classes(){
 	double total = sum_of_inverse_distances();
 	RealNumberCiphertext class_assigned = yashe.encrypt(yashe.encode(0.0));
@@ -33,15 +38,11 @@ RealNumberCiphertext HomomorphicWeightedKnn::accumulate_classes(){
 		double weight = inverse_of(instances[i].get_distance());
 		weight /= total;
 		// XXX: no need for CRT because coefficients are 0 or 1
-		RealNumberPlaintext plain_weight = yashe.encode(weight);
-		class_assigned += plain_weight * instances[i].get_class();		
+	//	RealNumberPlaintext plain_weight = yashe.encode(weight);
+	//	class_assigned += plain_weight * instances[i].get_class();		
+		class_assigned += instances[i].get_class() * weight;
 	}
 	return class_assigned;
-}
-
-double inverse_of(ZZ number){
-	RR number_RR = MakeRR(number_RR, 0);
-	return conv<double>(1.0 / number_RR);
 }
 
 double HomomorphicWeightedKnn::sum_of_inverse_distances(){
