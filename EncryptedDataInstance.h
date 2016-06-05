@@ -17,7 +17,7 @@ class EncryptedDataInstance {
     
     public:
 
-	EncryptedDataInstance(int id, const std::vector<NTL::ZZ>& data, RealNumberCiphertext _class);
+	EncryptedDataInstance(int id, const std::vector<NTL::ZZ>& data, const RealNumberCiphertext& _class);
 
 	void set_distance(const EncryptedDataInstance& query);
 	NTL::ZZ get_distance() const;

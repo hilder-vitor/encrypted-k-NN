@@ -3,7 +3,7 @@
 using namespace std;
 using namespace NTL;
 
-EncryptedDataInstance::EncryptedDataInstance(int _id, const std::vector<ZZ>& _data, RealNumberCiphertext _class) : id(_id), data(_data), label(_class), distance(to_ZZ(-1)){
+EncryptedDataInstance::EncryptedDataInstance(int _id, const std::vector<ZZ>& _data, const RealNumberCiphertext& _class) : id(_id), data(_data), label(_class), distance(to_ZZ(-1)){
 }
 
 void EncryptedDataInstance::set_distance(const EncryptedDataInstance& query){
@@ -39,16 +39,18 @@ const ZZ& EncryptedDataInstance::operator[](const int& i) const{
 	return data[i];
 }
 
+
 std::ostream& operator<<(std::ostream& os, const EncryptedDataInstance& v){
 	os << v.get_id() << " --> [";
 	unsigned int P = v.size();
 	if (0 == P){
-		os << "]" << endl;
+		os << "]";
 	}else{
 		for (unsigned int i = 0; i < P - 1; i++){
 			os << v[i] << ", ";
 		}
-		os << v[P - 1] << "]" << endl;
+		os << v[P - 1] << "]";
 	}
+	os << " class: " << v.get_class() << endl;
 	return os;
 }

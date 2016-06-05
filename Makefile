@@ -1,8 +1,8 @@
 DIR_OPE=lib/ope/lib/
 DIR_YASHE=lib/yashe/src/
-DOT_O=DataInstance.o Dataset.o EncryptedDataInstance.o HomomorphicWeightedKnn.o
+DOT_O=DataInstance.o Dataset.o EncryptedDataInstance.o EncryptedDataset.o HomomorphicWeightedKnn.o
 
-all: example $(DOT_O) main
+all: $(DOT_O) main
 
 
 example: test_neighborhood_several_distributions.cpp $(DIR_OPE)ope.a
@@ -20,10 +20,15 @@ HomomorphicWeightedKnn.o:  HomomorphicWeightedKnn.cpp  HomomorphicWeightedKnn.h 
 Dataset.o: Dataset.h Dataset.cpp DataInstance.o
 	g++ -c  Dataset.cpp -std=c++11  -o  Dataset.o
 
-main: WeightedKnnClient.cpp Dataset.o HomomorphicWeightedKnn.o 
+EncryptedDataset.o: EncryptedDataset.h EncryptedDataset.cpp EncryptedDataInstance.o $(DIR_OPE)ope.a
+	g++ -c  EncryptedDataset.cpp -std=c++11  -o  EncryptedDataset.o
+
+
+main: WeightedKnnClient.cpp Dataset.o EncryptedDataset.o HomomorphicWeightedKnn.o yashe.a 
 	g++ WeightedKnnClient.cpp $(DOT_O) -std=c++11  -o main $(DIR_OPE)ope.a $(DIR_YASHE)yashe.a -lntl -lgmp -lgmpxx -lcrypto -lm -lmpfr -lflint -pthread -fopenmp
 
-
+yashe.a: $(DIR_YASHE)Makefile
+	make -C $(DIR_YASHE)
 
 
 $(DIR_OPE)ope.a:
