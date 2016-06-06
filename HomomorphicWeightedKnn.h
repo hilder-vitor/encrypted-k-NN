@@ -13,19 +13,21 @@ class HomomorphicWeightedKnn {
     private:
 	unsigned int k;
 	vector<EncryptedDataInstance> instances;
-	const Yashe& yashe;
-	const CoefficientwiseCRT& crt;
+	Yashe& yashe;
+	CoefficientwiseCRT& crt;
 
 	// auxiliar functions
 	void compute_all_distances(const EncryptedDataInstance& query);
 	void sort_by_distance();
 	double sum_of_inverse_distances();
 	RealNumberCiphertext accumulate_classes();
+
+	RealNumberPlaintext encode_weight(double weight);
 	
     
     public:
 
-	HomomorphicWeightedKnn(unsigned int _k, const vector<EncryptedDataInstance>& _data, const Yashe& pk, const CoefficientwiseCRT& crt);
+	HomomorphicWeightedKnn(unsigned int _k, const vector<EncryptedDataInstance>& _data, Yashe& pk, CoefficientwiseCRT& crt);
 
 	RealNumberCiphertext classify(const EncryptedDataInstance& query);
 

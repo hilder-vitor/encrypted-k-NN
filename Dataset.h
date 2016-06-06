@@ -16,6 +16,8 @@ class Dataset {
 	std::vector<DataInstance> training_data; // Data instances whose classes are already know
 	std::vector<DataInstance> testing_data; // Data instances used to verify the accuracy of the classifier
 
+	unsigned int number_of_classes;
+
 	Dataset(const std::string& filename);
 
 	unsigned int number_of_training_instances();

@@ -53,6 +53,16 @@ void load_data(const std::string& filename, vector<DataInstance>& destination){
 	}
 }
 
+unsigned int max_class(const vector<DataInstance>& instances){
+	unsigned int m = 0;
+	for (unsigned int i = 0; i < instances.size(); i++){
+		if (m < instances[i].get_class()){
+			m = instances[i].get_class();
+		}
+	}
+	return m;
+}
+
 /* Constructor
  *
  * 	Try to read a file and create an instance of the dataset
@@ -63,6 +73,11 @@ Dataset::Dataset(const std::string& filename){
 	if (training_data[0].size() != testing_data[0].size()){
 		std::cout << "FAIL: training data and testing data do not have the same number of variables of interest." << std::endl;
 		exit(4);
+	}
+	unsigned int classes = max_class(training_data) + 1;
+	number_of_classes = max_class(testing_data) + 1;
+	if (classes > number_of_classes){
+		number_of_classes = classes;
 	}
 }
 

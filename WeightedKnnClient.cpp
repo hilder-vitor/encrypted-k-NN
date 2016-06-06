@@ -1,9 +1,11 @@
 #include "lib/ope/lib/ope.hh"
 #include "lib/yashe/src/Yashe.h"
+#include "lib/yashe/src/vectorutils.h"
 
 #include"Dataset.h"
 #include"EncryptedDataset.h"
 #include"EncryptedDataInstance.h"
+#include"HomomorphicWeightedKnn.h"
 
 #include <NTL/ZZ.h>
 
@@ -21,12 +23,12 @@ vector<fmpzxx> ts = {fmpzxx("16"), fmpzxx("9"), fmpzxx("11"), fmpzxx("13"), fmpz
 // -------------------------------------------------------------------------------
 // --------- PARAMS FOR L = 2 WITH t = 350064 (about 2**19) --------------------------------
 // -------------------------------------------------------------------------------
-const struct YASHEParams params_k9_class5_ = { 
+const struct YASHEParams params_k9_class5 = { 
 	4793, // n = 4793  (totient(n) = 4972 is the degree of the cyclotomic polynomial)
 	1,  // Key distribution's standard deviation
 	8,  // Error distribution's standard deviation
-	fmpzxx("392318858461667547739736838950479151006397215279002157113"), // q  (188-bit prime)   Ciphertext: ring R/qR 
-	fmpzxx("350064") // t: Cleartext:  ring R/(moduli)R  (for instance, if t = 7, R/7R) 
+	fmpzxx("196159429230833773869868419475239575503198607639501078831"), // q  (188-bit prime)   Ciphertext: ring R/qR
+	fmpzxx("350064") // t = 16*9*11*13*17 
 };
 
 
@@ -41,6 +43,21 @@ const struct YASHEParams params_L4_t2to32 = {
 	fmpzxx("4294967296") // t: Cleartext:  ring R/(moduli)R  (for instance, if t = 7, R/7R) 
 };
 
+int decrypt_assigned_class(const RealNumberCiphertext& enc_class, Yashe& yashe, CoefficientwiseCRT& crt){
+	vector<Plaintext> unpacked_class = crt.unpack(yashe.decrypt(enc_class));
+	unsigned int assigned_class = 0;
+	double max_value = -1;
+	for (unsigned int i = 0; i < unpacked_class.size(); i++){
+		yashe.t = ts[i];
+		double value = yashe.decode(RealNumberPlaintext(unpacked_class[i], 64));
+		if (value > max_value){
+			max_value = value;
+			assigned_class = i;
+		}
+	}
+	yashe.t = crt.get_modulus();
+	return assigned_class;
+}
 
 int main(int argc, char **argv) {
 /*	
@@ -58,23 +75,50 @@ int main(int argc, char **argv) {
 	OPE ope("A_ v3Ry $TR0NG Key", P, C);
 
 	Yashe* yashe;
-	string fileName("keys/L4_t2to32_yashe.keys");
+	string fileName("keys/L2_k9_class5.keys");
 	std::ifstream inFile(fileName);
 	if (inFile.good()){
 		cout << "Loading yashe." << endl;
 		yashe = new Yashe(fileName);
 	}else{
 		cout << "Generating keys." << endl;
-		yashe = new Yashe(params_L4_t2to32);
+		yashe = new Yashe(params_k9_class5);
 		yashe->serialize(fileName);	
+		cout << "Keys saved in " << fileName << endl;
 	} 
 
+	fmpz_mod_polyxx cyclotomic = yashe->get_phi();
 
-	Dataset data("simple5x3");
-
+	//Dataset data("simple5x3");
+	Dataset data("iris/iris");
 	cout << data << endl;
 
-	EncryptedDataset enc_data(data, ope, *yashe);
+	CoefficientwiseCRT crt(ts, cyclotomic); 
+	cout << "BEGIN: encrypting the dataset..." << endl;
+	EncryptedDataset enc_data(data, ope, *yashe, crt);
+	cout << "END: encrypting the dataset." << endl;
 
-	cout << enc_data << endl;
+	cout << "BEGIN: sending encrypted data to the cloud...." << endl;
+	HomomorphicWeightedKnn knn(3, enc_data.training_data, *yashe, crt);
+	cout << "END: sending encrypted data to the cloud." << endl;
+
+	unsigned int right = 0;
+	unsigned int wrong = 0;
+	unsigned int total_test_cases = enc_data.testing_data.size();
+
+	for (unsigned int j = 0; j < total_test_cases; j++){
+		RealNumberCiphertext encrypted_class = knn.classify(enc_data.testing_data[j]);
+		unsigned int assigned_class = decrypt_assigned_class(encrypted_class, *yashe, crt);
+		cout << "instance #"<< j << ": assigned class: " << assigned_class << endl; 
+		cout << "instance #"<< j << ": expected class: " << data.testing_data[j].get_class() << endl;
+		cout << endl;
+		if (assigned_class == data.testing_data[j].get_class()){
+			right++;
+		}else{
+			wrong++;
+		}
+	}
+	cout << "accuracy: " << ((double) right) / total_test_cases << endl;
+
+	return 0;
 }

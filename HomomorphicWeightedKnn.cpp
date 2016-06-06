@@ -31,16 +31,31 @@ double inverse_of(ZZ number){
 	return conv<double>(1.0 / number_RR);
 }
 
+RealNumberPlaintext HomomorphicWeightedKnn::encode_weight(double weight){
+	vector<fmpzxx> ts = crt.get_coprimes();
+	vector<Plaintext> plains;
+	for (unsigned int i = 0; i < ts.size(); i++){
+		yashe.t = ts[i];
+		plains.push_back(yashe.encode(weight, 64));		
+	}
+	yashe.t = crt.get_modulus();
+	RealNumberPlaintext encoded_weight(crt.pack(plains), 64);
+	return encoded_weight;
+}
+
 RealNumberCiphertext HomomorphicWeightedKnn::accumulate_classes(){
 	double total = sum_of_inverse_distances();
 	RealNumberCiphertext class_assigned = yashe.encrypt(yashe.encode(0.0));
 	for (unsigned int i = 0; i < k; i++){
-		double weight = inverse_of(instances[i].get_distance());
+		double weight;
+		if (instances[i].get_distance() == 0){
+			weight = 0.0000001;
+		}else{
+			weight = inverse_of(instances[i].get_distance());
+		}
 		weight /= total;
-		// XXX: no need for CRT because coefficients are 0 or 1
-	//	RealNumberPlaintext plain_weight = yashe.encode(weight);
-	//	class_assigned += plain_weight * instances[i].get_class();		
-		class_assigned += instances[i].get_class() * weight;
+		RealNumberPlaintext encoded_weight = encode_weight(weight);
+		class_assigned += instances[i].get_class() * encoded_weight;
 	}
 	return class_assigned;
 }
@@ -48,12 +63,16 @@ RealNumberCiphertext HomomorphicWeightedKnn::accumulate_classes(){
 double HomomorphicWeightedKnn::sum_of_inverse_distances(){
 	double total = 0.0;
 	for (unsigned int i = 0; i < k; i++){
-		total += inverse_of(instances[i].get_distance());
+		if (instances[i].get_distance() == 0){
+			total += 1.0 / 0.0000001;
+		}else{
+			total += inverse_of(instances[i].get_distance());
+		}
 	}
 	return total;
 }
 
-HomomorphicWeightedKnn::HomomorphicWeightedKnn(unsigned int _k, const vector<EncryptedDataInstance>& _data, const Yashe& public_key, const CoefficientwiseCRT& _crt) 
+HomomorphicWeightedKnn::HomomorphicWeightedKnn(unsigned int _k, const vector<EncryptedDataInstance>& _data, Yashe& public_key, CoefficientwiseCRT& _crt) 
 	: k(_k), instances(_data), yashe(public_key), crt(_crt) {
 	
 }
