@@ -63,8 +63,14 @@ void EncryptedDataset::encrypt_testing_data(vector<DataInstance> data){
 
 EncryptedDataset::EncryptedDataset(const Dataset& plain_dataset, OPE& _ope, Yashe& _yashe, CoefficientwiseCRT& _crt)
 	: ope(_ope), yashe(_yashe), crt(_crt), number_of_classes(plain_dataset.number_of_classes) {
+	timing tm;
+	tm.start();
 	encrypt_training_data(plain_dataset.training_data);
+	tm.stop("Encryption of the training dataset");
+	
+	tm.start();
 	encrypt_testing_data(plain_dataset.testing_data);
+	tm.stop("Encryption of the training dataset");
 
 	if (training_data[0].size() != testing_data[0].size()){
 		std::cout << "FAIL: training data and testing data do not have the same number of variables of interest." << std::endl;

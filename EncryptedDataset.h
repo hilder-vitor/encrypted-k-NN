@@ -12,6 +12,7 @@
 #include "lib/ope/lib/ope.hh"
 #include "lib/yashe/src/Yashe.h"
 #include "lib/yashe/src/CoefficientwiseCRT.h"
+#include "lib/yashe/src/timing.h"
 
 #include <vector>
 #include <iostream>

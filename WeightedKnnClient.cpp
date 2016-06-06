@@ -1,6 +1,7 @@
 #include "lib/ope/lib/ope.hh"
 #include "lib/yashe/src/Yashe.h"
 #include "lib/yashe/src/vectorutils.h"
+#include "lib/yashe/src/timing.h"
 
 #include"Dataset.h"
 #include"EncryptedDataset.h"
@@ -21,13 +22,15 @@ vector<fmpzxx> ts = {fmpzxx("16"), fmpzxx("9"), fmpzxx("11"), fmpzxx("13"), fmpz
 
 
 // -------------------------------------------------------------------------------
-// --------- PARAMS FOR L = 2 WITH t = 350064 (about 2**19) --------------------------------
+// --------- PARAMS FOR L = 2 (or L=1) WITH t = 350064 (about 2**19) --------------------------------
 // -------------------------------------------------------------------------------
 const struct YASHEParams params_k9_class5 = { 
-	4793, // n = 4793  (totient(n) = 4972 is the degree of the cyclotomic polynomial)
+//	4793, // n = 4793  (totient(n) = 4972 is the degree of the cyclotomic polynomial) L=2
+	3109, // n = 3109  (totient(n) = 3108 is the degree of the cyclotomic polynomial) L=1
 	1,  // Key distribution's standard deviation
 	8,  // Error distribution's standard deviation
-	fmpzxx("196159429230833773869868419475239575503198607639501078831"), // q  (188-bit prime)   Ciphertext: ring R/qR
+//	fmpzxx("196159429230833773869868419475239575503198607639501078831"), // q  (188-bit prime) L=2
+	fmpzxx("1267650600228229401496703205653"), // q  (100-bit prime)   Ciphertext: ring R/qR   L=1
 	fmpzxx("350064") // t = 16*9*11*13*17 
 };
 
@@ -60,16 +63,16 @@ int decrypt_assigned_class(const RealNumberCiphertext& enc_class, Yashe& yashe, 
 }
 
 int main(int argc, char **argv) {
-/*	
-	if (argc < 2){
-		cout << "ERROR: usage\n   " << argv[0] << " <data_set>" << endl;
+	
+	if (argc < 3){
+		cout << "ERROR: usage\n   " << argv[0] << " <data_set> <k>" << endl;
 		return 0;
 	}
 
 	string dataset_name = argv[1];
-*/
 	// number of neighbours in the k-NN
-	const unsigned int k = 5;
+	unsigned int k = stoi(argv[2]);
+
 
 	// plaintext range's length in bits (plaintexts are in [0, 2**P[
 	unsigned int P = 32;
@@ -92,26 +95,26 @@ int main(int argc, char **argv) {
 
 	fmpz_mod_polyxx cyclotomic = yashe->get_phi();
 
-	//Dataset data("simple5x3");
-	//Dataset data("iris/iris");
-	Dataset data("datasets/wine/wine.data");
+	Dataset data(dataset_name);
 	cout << data << endl;
 
 	CoefficientwiseCRT crt(ts, cyclotomic); 
-	cout << "BEGIN: encrypting the dataset..." << endl;
-	EncryptedDataset enc_data(data, ope, *yashe, crt);
-	cout << "END: encrypting the dataset." << endl;
 
-	cout << "BEGIN: sending encrypted data to the cloud...." << endl;
+	timing timing;
+
+	EncryptedDataset enc_data(data, ope, *yashe, crt);
+
+	//cout << "BEGIN: sending encrypted data to the cloud...." << endl;
 	HomomorphicWeightedKnn knn(k, enc_data.training_data, *yashe, crt);
-	cout << "END: sending encrypted data to the cloud." << endl;
 
 	unsigned int right = 0;
 	unsigned int wrong = 0;
 	unsigned int total_test_cases = enc_data.testing_data.size();
 
 	for (unsigned int j = 0; j < total_test_cases; j++){
+		timing.start();
 		RealNumberCiphertext encrypted_class = knn.classify(enc_data.testing_data[j]);
+		timing.stop("time homomorphic classification");
 		unsigned int assigned_class = decrypt_assigned_class(encrypted_class, *yashe, crt);
 		cout << "instance #"<< j << ": assigned class: " << assigned_class << endl; 
 		cout << "instance #"<< j << ": expected class: " << data.testing_data[j].get_class() << endl;
@@ -122,6 +125,8 @@ int main(int argc, char **argv) {
 			wrong++;
 		}
 	}
+//	timing_whole_classification.stop("Time to the whole classification");
+	timing.show();
 	cout << "accuracy: " << ((double) right) / total_test_cases << endl;
 
 	return 0;

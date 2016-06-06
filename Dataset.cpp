@@ -35,18 +35,14 @@ void load_data(const std::string& filename, vector<DataInstance>& destination){
 	vector<int> data_single_instance(P);
 
 	// read the datamatrix
-	cout << "N = " << N << endl;
-	cout << "P = " << P << endl;
 	for(unsigned int i = 0; i < N; i++){
 		for(unsigned int j = 0; j < P; j++){
 			if(fscanf(file, "%d", &d))
 				data_single_instance[j] = d;
 			else{
 				passed = false;
-				cout << "d = " << d << endl;
 			}
 		}
-		cout << "line #" << i << " " << (passed? "ok." : "not ok") << endl;
 		// read the class
 		fscanf(file, "%d", &d);
 		destination.push_back(DataInstance(i, data_single_instance, d));

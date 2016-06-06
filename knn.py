@@ -73,10 +73,10 @@ print(data)
 print("testing classes")
 print(classes)
 
-for i in range(len(data)):
-    tmp = np.array(data[i]).reshape(1, (len(data[i])))
-    print("knn.predict(data[%d])" % i)
-    print(knn.predict(tmp))
+#for i in range(len(data)):
+#    tmp = np.array(data[i]).reshape(1, (len(data[i])))
+#    print("knn.predict(data[%d])" % i)
+#    print(knn.predict(tmp))
 
 print(knn.score(data, classes))
 
