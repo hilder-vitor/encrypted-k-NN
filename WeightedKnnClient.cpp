@@ -68,6 +68,9 @@ int main(int argc, char **argv) {
 
 	string dataset_name = argv[1];
 */
+	// number of neighbours in the k-NN
+	const unsigned int k = 5;
+
 	// plaintext range's length in bits (plaintexts are in [0, 2**P[
 	unsigned int P = 32;
 	// ciphertext range's length in bits (ciphertexts are in [0, 2**C[
@@ -90,7 +93,8 @@ int main(int argc, char **argv) {
 	fmpz_mod_polyxx cyclotomic = yashe->get_phi();
 
 	//Dataset data("simple5x3");
-	Dataset data("iris/iris");
+	//Dataset data("iris/iris");
+	Dataset data("datasets/wine/wine.data");
 	cout << data << endl;
 
 	CoefficientwiseCRT crt(ts, cyclotomic); 
@@ -99,7 +103,7 @@ int main(int argc, char **argv) {
 	cout << "END: encrypting the dataset." << endl;
 
 	cout << "BEGIN: sending encrypted data to the cloud...." << endl;
-	HomomorphicWeightedKnn knn(3, enc_data.training_data, *yashe, crt);
+	HomomorphicWeightedKnn knn(k, enc_data.training_data, *yashe, crt);
 	cout << "END: sending encrypted data to the cloud." << endl;
 
 	unsigned int right = 0;

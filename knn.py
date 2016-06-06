@@ -1,11 +1,9 @@
 from sklearn.neighbors import KNeighborsClassifier
-from numpy import genfromtxt
+import numpy as np
+#from numpy import genfromtxt
+#from numpy import array
 
 from optparse import OptionParser
-
-
-training_data = 'simple5x3.data.training'
-testing_data = 'simple5x3.data.testing'
 
 
 #training_data = 'datasets/wine/wine.data.ope.training'
@@ -50,8 +48,10 @@ knn = KNeighborsClassifier(n_neighbors=int(options.k), weights='distance', algor
 
 # reading the training data
 training_data = options.base_filename + ".training"
-data_and_classes = genfromtxt(training_data, dtype='int')
+data_and_classes = np.genfromtxt(training_data, dtype='int', skip_header=1)
+#data = np.array(data_and_classes[:, 0:(len(data_and_classes[0]) - 1)])
 data = data_and_classes[:, 0:(len(data_and_classes[0]) - 1)]
+#classes = np.array(data_and_classes[:, (len(data_and_classes[0]) - 1)])
 classes = data_and_classes[:, (len(data_and_classes[0]) - 1)]
 knn.fit(data, classes)
 print("training data:")
@@ -62,9 +62,11 @@ print(classes)
 
 # reading the testing data
 testing_data = options.base_filename + ".testing"
-data_and_classes = genfromtxt(testing_data, dtype='int')
+data_and_classes = np.genfromtxt(testing_data, dtype='int', skip_header=1)
 data = data_and_classes[:, 0:(len(data_and_classes[0]) - 1)]
+#data = np.array(data_and_classes[:, 0:(len(data_and_classes[0]) - 1)])
 classes = data_and_classes[:, (len(data_and_classes[0]) - 1)]
+#classes = np.array(data_and_classes[:, (len(data_and_classes[0]) - 1)])
 
 print("testing data:")
 print(data)
@@ -72,8 +74,9 @@ print("testing classes")
 print(classes)
 
 for i in range(len(data)):
-    print("knn.predict(data[%d])" % i);
-    print(knn.predict(data[i]));
+    tmp = np.array(data[i]).reshape(1, (len(data[i])))
+    print("knn.predict(data[%d])" % i)
+    print(knn.predict(tmp))
 
 print(knn.score(data, classes))
 
