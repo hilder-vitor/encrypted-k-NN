@@ -1,0 +1,42 @@
+#include <vector>
+#include <iostream>
+
+#include<NTL/RR.h>
+
+#include "HomomorphicKnn.h"
+
+using namespace NTL;
+
+
+void HomomorphicKnn::set_k(unsigned int neighbourhood_size){
+	k = (neighbourhood_size == 0 ? 1 : neighbourhood_size);
+}
+
+void HomomorphicKnn::compute_all_distances(const EncryptedDataInstance& query){
+	for (unsigned int i = 0; i < instances.size(); i++){
+		instances[i].set_distance(query);
+	}
+}
+
+void HomomorphicKnn::sort_by_distance(){
+	sort(instances.begin(), instances.end());
+}
+
+RealNumberCiphertext HomomorphicKnn::accumulate_classes(){
+	RealNumberCiphertext class_assigned = instances[0].get_class();
+	for (unsigned int i = 1; i < k; i++){
+		class_assigned += instances[i].get_class();
+	}
+	return class_assigned;
+}
+
+HomomorphicKnn::HomomorphicKnn(unsigned int _k, const vector<EncryptedDataInstance>& _data, Yashe& public_key) 
+	: k(_k), instances(_data), yashe(public_key) {
+	
+}
+
+RealNumberCiphertext HomomorphicKnn::classify(const EncryptedDataInstance& query){
+	compute_all_distances(query);
+	sort_by_distance();
+	return accumulate_classes();
+}

@@ -1,8 +1,8 @@
 DIR_OPE=lib/ope/lib/
 DIR_YASHE=lib/yashe/src/
-DOT_O=DataInstance.o Dataset.o EncryptedDataInstance.o EncryptedDataset.o HomomorphicWeightedKnn.o
+DOT_O=DataInstance.o Dataset.o EncryptedDataInstance.o EncryptedDataset.o HomomorphicWeightedKnn.o EncryptedDataset_Unweighted.o HomomorphicKnn.o
 
-all: $(DOT_O) main
+all: $(DOT_O) knn wknn
 
 
 example: test_neighborhood_several_distributions.cpp $(DIR_OPE)ope.a
@@ -17,15 +17,26 @@ EncryptedDataInstance.o: EncryptedDataInstance.cpp EncryptedDataInstance.h
 HomomorphicWeightedKnn.o:  HomomorphicWeightedKnn.cpp  HomomorphicWeightedKnn.h EncryptedDataInstance.o
 	g++ -c  HomomorphicWeightedKnn.cpp -std=c++11  -o  HomomorphicWeightedKnn.o
 
+HomomorphicKnn.o:  HomomorphicKnn.cpp  HomomorphicKnn.h EncryptedDataset_Unweighted.o
+	g++ -c  HomomorphicKnn.cpp -std=c++11  -o  HomomorphicKnn.o
+
+
 Dataset.o: Dataset.h Dataset.cpp DataInstance.o
 	g++ -c  Dataset.cpp -std=c++11  -o  Dataset.o
 
 EncryptedDataset.o: EncryptedDataset.h EncryptedDataset.cpp EncryptedDataInstance.o $(DIR_OPE)ope.a
 	g++ -c  EncryptedDataset.cpp -std=c++11  -o  EncryptedDataset.o
 
+EncryptedDataset_Unweighted.o: EncryptedDataset_Unweighted.h EncryptedDataset_Unweighted.cpp EncryptedDataInstance.o $(DIR_OPE)ope.a
+	g++ -c  EncryptedDataset_Unweighted.cpp -std=c++11  -o  EncryptedDataset_Unweighted.o
 
-main: WeightedKnnClient.cpp Dataset.o EncryptedDataset.o HomomorphicWeightedKnn.o yashe.a 
-	g++ WeightedKnnClient.cpp $(DOT_O) -std=c++11  -o main $(DIR_OPE)ope.a $(DIR_YASHE)yashe.a -lntl -lgmp -lgmpxx -lcrypto -lm -lmpfr -lflint -pthread -fopenmp
+
+wknn: WeightedKnnClient.cpp Dataset.o EncryptedDataset.o HomomorphicWeightedKnn.o yashe.a 
+	g++ WeightedKnnClient.cpp $(DOT_O) -std=c++11  -o wknn $(DIR_OPE)ope.a $(DIR_YASHE)yashe.a -lntl -lgmp -lgmpxx -lcrypto -lm -lmpfr -lflint -pthread -fopenmp
+
+knn: KnnClient.cpp Dataset.o EncryptedDataset_Unweighted.o HomomorphicKnn.o yashe.a 
+	g++ KnnClient.cpp $(DOT_O) -std=c++11  -o knn $(DIR_OPE)ope.a $(DIR_YASHE)yashe.a -lntl -lgmp -lgmpxx -lcrypto -lm -lmpfr -lflint -pthread -fopenmp
+
 
 yashe.a: $(DIR_YASHE)Makefile
 	make -C $(DIR_YASHE)

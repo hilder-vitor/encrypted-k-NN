@@ -5,6 +5,7 @@ import numpy as np
 
 from optparse import OptionParser
 
+from timeit import default_timer as timer
 
 #training_data = 'datasets/wine/wine.data.ope.training'
 #testing_data = 'datasets/wine/wine.data.ope.testing'
@@ -77,6 +78,7 @@ print(classes)
 #    tmp = np.array(data[i]).reshape(1, (len(data[i])))
 #    print("knn.predict(data[%d])" % i)
 #    print(knn.predict(tmp))
-
+start = timer()
 print(knn.score(data, classes))
-
+end = timer()
+print("Time to classify %d instances: %lf  (average time: %lf)" % (len(data), end - start, (end-start)/len(data)))
