@@ -14,27 +14,13 @@ using namespace NTL;
 using namespace std;
 
 
-// -------------------------------------------------------------------------------
-// --------- PARAMS FOR L = 0 WITH t = 350064 (about 2**19) --------------------------------
-// -------------------------------------------------------------------------------
-const struct YASHEParams params_yashe_k_up_to_16 = { 
-	541, // n = 541  (totient(n) = 540 is the degree of the cyclotomic polynomial)
-	1,  // Key distribution's standard deviation
-	8,  // Error distribution's standard deviation
-	fmpzxx("33554467"), // q  (25-bit prime)   Ciphertext: ring R/qR
-	fmpzxx("16") // t = 16  (maximum number of neighbours to be considered)
-};
-
-
-int decrypt_assigned_class(const Ciphertext& enc_class, Yashe& yashe){
+int decrypt_assigned_class(const vector<mpz_class>& enc_class, Paillier& paillier){
 	cout << "enc_class = " << enc_class << endl;
-	Plaintext plain_class = yashe.decrypt(enc_class);
+	vector<mpz_class> plain_class = paillier.dec(enc_class);
 	cout << "plain_class = " << plain_class << endl;
-	if (plain_class.is_zero())
-		return 0;
 	int index_max = 0;
-	for (int i = 1; i <= plain_class.degree(); i++){
-		if (plain_class.get(i) > plain_class.get(index_max))
+	for (int i = 1; i <= plain_class.size(); i++){
+		if (plain_class[i] > plain_class[index_max])
 			index_max = i;
 	}
 	return index_max;
@@ -57,28 +43,17 @@ int main(int argc, char **argv) {
 	unsigned int C = 40;
 	OPE ope("A_ v3Ry $TR0NG Key", P, C);
 
-	Yashe* yashe;
-	string fileName("keys/params_yashe_k_up_to_16.keys");
-	std::ifstream inFile(fileName);
-	if (inFile.good()){
-		cout << "Loading yashe." << endl;
-		yashe = new Yashe(fileName);
-		cout << "Loaded." << endl;
-	}else{
-		cout << "Generating keys." << endl;
-		yashe = new Yashe(params_yashe_k_up_to_16);
-		yashe->serialize(fileName);	
-		cout << "Keys saved in " << fileName << endl;
-	} 
-
+	cout << "Generating keys." << endl;
+	Paillier paillier(2048);
+	cout << "Keys generated." << endl;
 
 	Dataset data(dataset_name);
 	cout << data << endl;
 
 	timing timing;
-	EncryptedDataset_Unweighted enc_data(data, ope, *yashe);
+	EncryptedDataset_Unweighted enc_data(data, ope, paillier);
 
-	HomomorphicKnn knn(k, enc_data.training_data, *yashe);
+	HomomorphicKnn knn(k, enc_data.training_data, paillier);
 
 	unsigned int right = 0;
 	unsigned int wrong = 0;
@@ -86,9 +61,9 @@ int main(int argc, char **argv) {
 
 	for (unsigned int j = 0; j < total_test_cases; j++){
 		timing.start();
-		Ciphertext encrypted_class = knn.classify(enc_data.testing_data[j]);
+		vector<mpz_class> encrypted_class = knn.classify(enc_data.testing_data[j]);
 		timing.stop("time homomorphic classification");
-		unsigned int assigned_class = decrypt_assigned_class(encrypted_class, *yashe);
+		unsigned int assigned_class = decrypt_assigned_class(encrypted_class, paillier);
 		cout << "instance #"<< j << ": assigned class: " << assigned_class << endl; 
 		cout << "instance #"<< j << ": expected class: " << data.testing_data[j].get_class() << endl;
 		cout << endl;

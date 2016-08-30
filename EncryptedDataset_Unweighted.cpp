@@ -17,15 +17,24 @@ vector<ZZ> EncryptedDataset_Unweighted::encrypt_vector(const DataInstance& sampl
 	return data;
 }
 
-Plaintext EncryptedDataset_Unweighted::encode_class(unsigned int i){
-	Plaintext plain_class(yashe.t, *(yashe.phi));
-	plain_class.set(i, 1);
-	return plain_class;
+vector<mpz_class> EncryptedDataset_Unweighted::encode_class(unsigned int i){
+	if (i >= number_of_classes){
+		cerr << "trying to encode value " << i << ", which is greater than the number of classes " << number_of_classes << endl;
+		exit(5);
+	}
+	vector<mpz_class> plain_vec(number_of_classes);
+	for (unsigned int j = 0; j < i; j++)
+		plain_vec[j] = 0;
+	plain_vec[i] = 1;
+	for (unsigned int j = i+1; j < number_of_classes; j++)
+		plain_vec[j] = 0;
+
+	return plain_vec;
 }
 
 EncryptedDataInstance EncryptedDataset_Unweighted::encrypt_training_instance(const DataInstance& sample){
 	vector<ZZ> data = encrypt_vector(sample);
-	RealNumberCiphertext enc_class = yashe.encrypt(encode_class(sample.get_class()));
+	vector<mpz_class> enc_class = paillier.enc(encode_class(sample.get_class()));
 	return EncryptedDataInstance(sample.get_id(), data, enc_class);
 }
 
@@ -37,17 +46,16 @@ void EncryptedDataset_Unweighted::encrypt_training_data(vector<DataInstance> dat
 }
 
 void EncryptedDataset_Unweighted::encrypt_testing_data(vector<DataInstance> data){
-	RealNumberCiphertext zero = yashe.encrypt(yashe.encode(0.0, 0));
+	vector<mpz_class> zero(number_of_classes, 0);
 	unsigned int N = data.size();
 	for (unsigned int i = 0; i < N; i++){
-		EncryptedDataInstance edi(data[i].get_id(), encrypt_vector(data[i]), zero);
+		EncryptedDataInstance edi(data[i].get_id(), encrypt_vector(data[i]), paillier.enc(zero));
 		testing_data.push_back(edi);
 	}
 }
 
-
-EncryptedDataset_Unweighted::EncryptedDataset_Unweighted(const Dataset& plain_dataset, OPE& _ope, Yashe& _yashe)
-	: ope(_ope), yashe(_yashe), number_of_classes(plain_dataset.number_of_classes) {
+EncryptedDataset_Unweighted::EncryptedDataset_Unweighted(const Dataset& plain_dataset, OPE& _ope, Paillier& _paillier)
+	: ope(_ope), paillier(_paillier), number_of_classes(plain_dataset.number_of_classes) {
 	timing tm;
 	tm.start();
 	encrypt_training_data(plain_dataset.training_data);

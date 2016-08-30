@@ -5,26 +5,26 @@
 #include <iostream>
 
 #include "EncryptedDataInstance.h"
-#include "lib/yashe/src/Yashe.h"
+#include "lib/paillier/src/Paillier.h"
 
 
 class HomomorphicKnn {
     private:
 	unsigned int k;
-	vector<EncryptedDataInstance> instances;
-	Yashe& yashe;
+	std::vector<EncryptedDataInstance> instances;
+	Paillier& paillier;
 
 	// auxiliar functions
 	void compute_all_distances(const EncryptedDataInstance& query);
 	void sort_by_distance();
 	double sum_of_inverse_distances();
-	RealNumberCiphertext accumulate_classes();
+	std::vector<mpz_class> accumulate_classes(); // vector of (Paillier) ciphertexts
 
     public:
 
-	HomomorphicKnn(unsigned int _k, const vector<EncryptedDataInstance>& _data, Yashe& pk);
+	HomomorphicKnn(unsigned int _k, const std::vector<EncryptedDataInstance>& _data, Paillier& pk);
 
-	RealNumberCiphertext classify(const EncryptedDataInstance& query);
+	std::vector<mpz_class> classify(const EncryptedDataInstance& query);
 
 	void set_k(unsigned int neighbourhood_size);
 
