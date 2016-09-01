@@ -27,9 +27,7 @@ const struct YASHEParams params_yashe_k_up_to_16 = {
 
 
 int decrypt_assigned_class(const Ciphertext& enc_class, Yashe& yashe){
-	cout << "enc_class = " << enc_class << endl;
 	Plaintext plain_class = yashe.decrypt(enc_class);
-	cout << "plain_class = " << plain_class << endl;
 	if (plain_class.is_zero())
 		return 0;
 	int index_max = 0;

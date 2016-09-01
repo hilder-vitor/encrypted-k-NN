@@ -101,6 +101,22 @@ vector<VEC> random_VEC(unsigned int number_of_vectors, unsigned int dimension, f
 	return v;
 }
 
+
+vector<VEC> random_VEC2(unsigned int number_of_vectors, unsigned int dimension, function <int()> rand_gen){
+	vector<VEC> v(number_of_vectors);
+	for (unsigned int i = 0; i < number_of_vectors; i++){
+		v[i].name = i;
+		for (unsigned int j = 0; j <  dimension; j++){
+			if (j == 3)
+				v[i].data.push_back(((j+i)%9)*100);
+			else	
+				v[i].data.push_back(rand_gen());
+		}
+		add_min_value_to_exclude_negatives(v[i].data);
+	}
+	return v;
+}
+
 template <typename T> 
 void printVector(vector<T> u){
 	unsigned int n = u.size();
@@ -182,6 +198,35 @@ double k_neighborhood_intersection(const vector<DISTANCE>& dist1, const vector<D
 		}
 	}
 	return percentual / k;;
+}
+
+double test_distribution2(OPE& o, unsigned int N, unsigned int P, unsigned int k, function <int()> my_rand, unsigned int& ok, unsigned int& not_ok){
+	ok = not_ok = 0;
+	unsigned int number_of_tests = 10;
+	vector<VEC> instances = random_VEC2(N, P, my_rand);
+	vector<VEC> queries = random_VEC2(number_of_tests, P, my_rand);
+
+	vector<ENC_VEC> enc_instances = encryptVEC (o, instances);
+	vector<ENC_VEC> enc_queries = encryptVEC (o, queries);
+	
+	double avg_not_ok = 0.0;
+	for (unsigned int i = 0; i < number_of_tests; i++){
+		vector<DISTANCE> original_distances =  compute_distances(instances, queries[i]);
+		vector<DISTANCE> enc_distances =  compute_distances(enc_instances, enc_queries[i]);
+		sort_distances(original_distances);
+		sort_distances(enc_distances);
+
+		double percent = k_neighborhood_intersection(original_distances, enc_distances, k);
+		if (0.9999 <= percent && percent <= 1.0001)
+			ok++;
+		else{
+			not_ok++;
+			avg_not_ok += percent;
+		}
+	}
+	if (not_ok)
+		return avg_not_ok / not_ok;
+	return -1;
 }
 
 double test_distribution(OPE& o, unsigned int N, unsigned int P, unsigned int k, function <int()> my_rand, unsigned int& ok, unsigned int& not_ok){
@@ -380,6 +425,39 @@ void test_poisson_distribution(OPE& o){
 }
 
 
+
+void test_uniform_distribution2(OPE& o){
+	unsigned int N;
+	unsigned int P;
+	unsigned int k;
+	int uniform_a;
+	int uniform_b;
+
+	std::default_random_engine generator(time(0));
+
+	double percent;
+	unsigned int ok;
+	unsigned int not_ok;
+	for (N = 10; N < 1100; N += 100){
+		for (P = 5; P < N/2 && P <= 100; P += 7){
+			for (uniform_a = 0; uniform_a <= 500 ; uniform_a += 100){
+				for (uniform_b = uniform_a + 10; uniform_b <= 1500 ; uniform_b = uniform_b*2 + 15){
+					for (k = 1; k < 9; k++){
+						std::uniform_int_distribution<int> distribution(uniform_a, uniform_b);
+						function <int()> my_uniform_rand = [&generator, &distribution](){ return distribution(generator);};
+						double avg_not_ok = test_distribution2(o, N, P, k, my_uniform_rand, ok, not_ok);
+						cout << "N=" << N << "," << "P=" << P << "," << uniform_a << "," << uniform_b << "," << "k=" << k << "," << "ok=" << ok << "," << not_ok << "," << avg_not_ok << endl;
+					}
+				}
+			}
+		}
+	}
+}
+
+
+
+
+
 void test_uniform_distribution(OPE& o){
 	unsigned int N;
 	unsigned int P;
@@ -415,6 +493,8 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
+
+
 	unordered_map<string, function<void(OPE&)> > implemented_distribution =
 				{{"cauchy", test_cauchy_distribution},
 				 {"gamma", test_gamma_distribution},
@@ -429,6 +509,10 @@ int main(int argc, char **argv) {
 	// ciphertext range's length in bits (ciphertexts are in [0, 2**C[
 	unsigned int C = 33;
 	OPE o("A_ v3Ry $TR0NG Key", P, C);
+
+	test_uniform_distribution2(o);
+	return 0;
+
 
 	string chosen_distribution(argv[1]);
 

@@ -41,6 +41,11 @@ void load_data(const std::string& filename, vector<DataInstance>& destination){
 				data_single_instance[j] = d;
 			else{
 				passed = false;
+				if (! passed){
+					std::cout << "FAIL: could not read the values inside the file." << std::endl;
+					cout << "Some error occured on the line #" << i << endl;
+					exit(4);
+				}
 			}
 		}
 		// read the class
@@ -48,10 +53,6 @@ void load_data(const std::string& filename, vector<DataInstance>& destination){
 		destination.push_back(DataInstance(i, data_single_instance, d));
 	}
 
-	if (! passed){
-		std::cout << "FAIL: could not read the values inside the file." << std::endl;
-		exit(4);
-	}
 }
 
 unsigned int max_class(const vector<DataInstance>& instances){

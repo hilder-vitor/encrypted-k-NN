@@ -16,9 +16,10 @@ using namespace std;
 
 /******************************************************************************
  * 		FIVE CLASS   (  =>  number of slots = 5)
- * 		K = 9  (  =>  t_i >= 9)
+ * 		K = 9  (  =>  t_i >= 18)
  ******************************************************************************/
-vector<fmpzxx> ts = {fmpzxx("16"), fmpzxx("9"), fmpzxx("11"), fmpzxx("13"), fmpzxx("17")};
+vector<fmpzxx> ts = {fmpzxx("32"), fmpzxx("27"), fmpzxx("19"), fmpzxx("23"), fmpzxx("29")};
+
 
 
 // -------------------------------------------------------------------------------
@@ -31,7 +32,9 @@ const struct YASHEParams params_k9_class5 = {
 	8,  // Error distribution's standard deviation
 //	fmpzxx("196159429230833773869868419475239575503198607639501078831"), // q  (188-bit prime) L=2
 	fmpzxx("1267650600228229401496703205653"), // q  (100-bit prime)   Ciphertext: ring R/qR   L=1
-	fmpzxx("350064") // t = 16*9*11*13*17 
+//	fmpzxx("21267647932558653966460912964485513283"), // q  (124-bit prime)   Ciphertext: ring R/qR   L=1
+//	fmpzxx("350064") // t = 16*9*11*13*17 
+	fmpzxx("10949472") // t = 32*27*19*23*29
 };
 
 
@@ -78,7 +81,7 @@ int main(int argc, char **argv) {
 	unsigned int P = 32;
 	// ciphertext range's length in bits (ciphertexts are in [0, 2**C[
 	unsigned int C = 33;
-	OPE ope("A_ v3Ry $TR0NG Key", P, C);
+	OPE ope("A__v3Ry $TR0NG Key", P, C);
 
 	Yashe* yashe;
 	string fileName("keys/L2_k9_class5.keys");
