@@ -64,7 +64,7 @@ EncryptedDataset::EncryptedDataset(const Dataset& plain_dataset, OPE& _ope, Pail
 	
 	tm.start();
 	encrypt_testing_data(plain_dataset.testing_data);
-	tm.stop("Encryption of the training dataset");
+	tm.stop("Encryption of the testing dataset");
 
 	if (training_data[0].size() != testing_data[0].size()){
 		std::cout << "FAIL: training data and testing data do not have the same number of variables of interest." << std::endl;

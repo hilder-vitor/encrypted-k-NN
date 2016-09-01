@@ -15,11 +15,9 @@ using namespace std;
 
 
 int decrypt_assigned_class(const vector<mpz_class>& enc_class, Paillier& paillier){
-	cout << "enc_class = " << enc_class << endl;
 	vector<mpz_class> plain_class = paillier.dec(enc_class);
-	cout << "plain_class = " << plain_class << endl;
 	int index_max = 0;
-	for (int i = 1; i <= plain_class.size(); i++){
+	for (int i = 1; i < plain_class.size(); i++){
 		if (plain_class[i] > plain_class[index_max])
 			index_max = i;
 	}
