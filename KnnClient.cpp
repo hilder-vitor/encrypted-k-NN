@@ -1,5 +1,4 @@
 #include "lib/ope/lib/ope.hh"
-#include "lib/yashe/src/Yashe.h"
 #include "lib/yashe/src/vectorutils.h"
 #include "lib/yashe/src/timing.h"
 

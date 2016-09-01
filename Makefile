@@ -3,6 +3,11 @@ DIR_YASHE=lib/yashe/src/
 DIR_PAILLIER=lib/paillier/
 DOT_O=DataInstance.o Dataset.o EncryptedDataInstance.o EncryptedDataset.o EncryptedDataset_Unweighted.o HomomorphicKnn.o
 
+CXXFLAGS=-I/usr/local/include -I/opt/local/include -I/home/vitor/mylibs/mpfr/include  -I/home/vitor/mylibs/flint/include -I/home/vitor/mylibs/gmp/include -O3 -fopenmp
+LDFLAGS=-L/opt/local/lib/  -L/home/vitor/mylibs/flint/lib/ -L/home/vitor/mylibs/gmp/lib/ -L/home/vitor/mylibs/mpfr/lib/ -lntl -lgmp -lgmpxx -lcrypto -lm -lmpfr -lflint 
+
+
+
 all: $(DOT_O) knn 
 	#wknn
 
@@ -37,7 +42,7 @@ EncryptedDataset_Unweighted.o: EncryptedDataset_Unweighted.h EncryptedDataset_Un
 #	g++ WeightedKnnClient.cpp $(DOT_O) -std=c++11  -o wknn $(DIR_OPE)ope.a $(DIR_YASHE)yashe.a -lntl -lgmp -lgmpxx -lcrypto -lm -lmpfr -lflint -pthread -fopenmp
 
 knn: KnnClient.cpp Dataset.o EncryptedDataset_Unweighted.o HomomorphicKnn.o yashe.a Paillier.o
-	g++ KnnClient.cpp $(DOT_O) -std=c++11  -o knn $(DIR_OPE)ope.a $(DIR_YASHE)yashe.a $(DIR_PAILLIER)src/Paillier.cpp -lntl -lgmp -lgmpxx -lcrypto -lm -lmpfr -lflint -pthread -fopenmp
+	g++ KnnClient.cpp $(DOT_O) -std=c++11  -o knn $(DIR_OPE)ope.a $(DIR_YASHE)yashe.a $(DIR_PAILLIER)src/Paillier.cpp -pthread $(CXXFLAGS) $(LDFLAGS)
 
 
 yashe.a: $(DIR_YASHE)Makefile
