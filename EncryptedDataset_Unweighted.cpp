@@ -46,16 +46,18 @@ void EncryptedDataset_Unweighted::encrypt_training_data(vector<DataInstance> dat
 }
 
 void EncryptedDataset_Unweighted::encrypt_testing_data(vector<DataInstance> data){
-	vector<mpz_class> zero(number_of_classes, 0);
 	unsigned int N = data.size();
 	for (unsigned int i = 0; i < N; i++){
-		EncryptedDataInstance edi(data[i].get_id(), encrypt_vector(data[i]), paillier.enc(zero));
+		EncryptedDataInstance edi(data[i].get_id(), encrypt_vector(data[i]), zero);
 		testing_data.push_back(edi);
 	}
 }
 
 EncryptedDataset_Unweighted::EncryptedDataset_Unweighted(const Dataset& plain_dataset, OPE& _ope, Paillier& _paillier)
 	: ope(_ope), paillier(_paillier), number_of_classes(plain_dataset.number_of_classes) {
+	
+	vector<mpz_class> plain_zero(number_of_classes, 0);
+	zero = paillier.enc(plain_zero);
 	timing tm;
 	tm.start();
 	encrypt_training_data(plain_dataset.training_data);
