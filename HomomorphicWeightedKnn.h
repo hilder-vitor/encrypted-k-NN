@@ -5,31 +5,31 @@
 #include <iostream>
 
 #include "EncryptedDataInstance.h"
-#include "lib/yashe/src/Yashe.h"
-#include "lib/yashe/src/CoefficientwiseCRT.h"
+#include "lib/paillier/src/Paillier.h"
+#include "lib/yashe/src/vectorutils.h"
 
 
 class HomomorphicWeightedKnn {
     private:
 	unsigned int k;
-	vector<EncryptedDataInstance> instances;
-	Yashe& yashe;
-	CoefficientwiseCRT& crt;
+	std::vector<EncryptedDataInstance> instances;
+	Paillier& paillier;
+	int number_of_classes;
 
 	// auxiliar functions
 	void compute_all_distances(const EncryptedDataInstance& query);
 	void sort_by_distance();
 	double sum_of_inverse_distances();
-	RealNumberCiphertext accumulate_classes();
+	std::vector<mpz_class> accumulate_classes();
 
-	RealNumberPlaintext encode_weight(double weight);
+	std::vector<mpz_class> encode_weight(EncryptedDataInstance instance, double total);
 	
     
     public:
 
-	HomomorphicWeightedKnn(unsigned int _k, const vector<EncryptedDataInstance>& _data, Yashe& pk, CoefficientwiseCRT& crt);
+	HomomorphicWeightedKnn(unsigned int _k, const std::vector<EncryptedDataInstance>& _data, Paillier& pk);
 
-	RealNumberCiphertext classify(const EncryptedDataInstance& query);
+	std::vector<mpz_class> classify(const EncryptedDataInstance& query);
 
 	void set_k(unsigned int neighbourhood_size);
 

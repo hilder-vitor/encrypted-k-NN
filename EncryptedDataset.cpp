@@ -22,12 +22,8 @@ vector<mpz_class> EncryptedDataset::encode_class(unsigned int i){
 		cerr << "trying to encode value " << i << ", which is greater than the number of classes " << number_of_classes << endl;
 		exit(5);
 	}
-	vector<mpz_class> plain_vec(number_of_classes);
-	for (unsigned int j = 0; j < i; j++)
-		plain_vec[j] = 0;
+	vector<mpz_class> plain_vec(number_of_classes, 0);
 	plain_vec[i] = 1;
-	for (unsigned int j = i+1; j < number_of_classes; j++)
-		plain_vec[j] = 0;
 
 	return plain_vec;
 }
@@ -46,10 +42,9 @@ void EncryptedDataset::encrypt_training_data(vector<DataInstance> data){
 }
 
 void EncryptedDataset::encrypt_testing_data(vector<DataInstance> data){
-	vector<mpz_class> zero(number_of_classes, 0);
 	unsigned int N = data.size();
 	for (unsigned int i = 0; i < N; i++){
-		EncryptedDataInstance edi(data[i].get_id(), encrypt_vector(data[i]), paillier.enc(zero));
+		EncryptedDataInstance edi(data[i].get_id(), encrypt_vector(data[i]), zero);
 		testing_data.push_back(edi);
 	}
 }
@@ -57,6 +52,10 @@ void EncryptedDataset::encrypt_testing_data(vector<DataInstance> data){
 
 EncryptedDataset::EncryptedDataset(const Dataset& plain_dataset, OPE& _ope, Paillier& _paillier)
 	: ope(_ope), paillier(_paillier), number_of_classes(plain_dataset.number_of_classes) {
+
+	vector<mpz_class> plain_zero(number_of_classes, 0);
+	zero = paillier.enc(plain_zero);
+
 	timing tm;
 	tm.start();
 	encrypt_training_data(plain_dataset.training_data);
