@@ -3,7 +3,7 @@
 using namespace std;
 using namespace NTL;
 
-EncryptedDataInstance::EncryptedDataInstance(int _id, const std::vector<ZZ>& _data, const vector<mpz_class>& _class) : id(_id), data(_data), label(_class), distance(to_ZZ(-1)){
+EncryptedDataInstance::EncryptedDataInstance(int _id, const std::vector<ZZ>& _data, const mpz_class& _class) : id(_id), data(_data), label(_class), distance(to_ZZ(-1)){
 }
 
 void EncryptedDataInstance::set_distance(const EncryptedDataInstance& query){
@@ -22,7 +22,7 @@ int EncryptedDataInstance::get_id() const{
 	return id;
 }
 
-vector<mpz_class> EncryptedDataInstance::get_class() const{
+mpz_class EncryptedDataInstance::get_class() const{
 	return label;
 }
 
@@ -51,11 +51,6 @@ std::ostream& operator<<(std::ostream& os, const EncryptedDataInstance& v){
 		}
 		os << v[P - 1] << "]";
 	}
-	os << " class: [";
-	vector<mpz_class> enc_class = v.get_class();
-	for (unsigned int i = 0; i < enc_class.size(); i++){
-		cout << enc_class[i] << ", ";
-	}
-	cout << "]" << endl;
+	os << " class: " << v.get_class() << endl;
 	return os;
 }

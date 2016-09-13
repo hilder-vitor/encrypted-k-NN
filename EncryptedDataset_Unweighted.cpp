@@ -17,24 +17,24 @@ vector<ZZ> EncryptedDataset_Unweighted::encrypt_vector(const DataInstance& sampl
 	return data;
 }
 
-vector<mpz_class> EncryptedDataset_Unweighted::encode_class(unsigned int i){
+/** XXX:  hardcoded 64 should be <gap>
+ *  XXX:  it can be improved pre-calculating all the possible encoded values. 
+ */
+mpz_class EncryptedDataset_Unweighted::encode_class(unsigned int i){
 	if (i >= number_of_classes){
 		cerr << "trying to encode value " << i << ", which is greater than the number of classes " << number_of_classes << endl;
 		exit(5);
 	}
-	vector<mpz_class> plain_vec(number_of_classes);
-	for (unsigned int j = 0; j < i; j++)
-		plain_vec[j] = 0;
-	plain_vec[i] = 1;
-	for (unsigned int j = i+1; j < number_of_classes; j++)
-		plain_vec[j] = 0;
+	//mpz_class position = 1 << i*64;
+	mpz_class position;
+	mpz_mul_2exp (position.get_mpz_t(), mpz_class(1).get_mpz_t(), i*64);
 
-	return plain_vec;
+	return position;
 }
 
 EncryptedDataInstance EncryptedDataset_Unweighted::encrypt_training_instance(const DataInstance& sample){
 	vector<ZZ> data = encrypt_vector(sample);
-	vector<mpz_class> enc_class = paillier.enc(encode_class(sample.get_class()));
+	mpz_class enc_class = paillier.enc(encode_class(sample.get_class()));
 	return EncryptedDataInstance(sample.get_id(), data, enc_class);
 }
 
@@ -56,7 +56,7 @@ void EncryptedDataset_Unweighted::encrypt_testing_data(vector<DataInstance> data
 EncryptedDataset_Unweighted::EncryptedDataset_Unweighted(const Dataset& plain_dataset, OPE& _ope, Paillier& _paillier)
 	: ope(_ope), paillier(_paillier), number_of_classes(plain_dataset.number_of_classes) {
 	
-	vector<mpz_class> plain_zero(number_of_classes, 0);
+	mpz_class plain_zero(0);
 	zero = paillier.enc(plain_zero);
 	timing tm;
 	tm.start();

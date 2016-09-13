@@ -24,10 +24,10 @@ class EncryptedDataset {
 	OPE& ope;
 	Paillier& paillier;
 	unsigned int number_of_classes;
-	vector<mpz_class> zero;
+	mpz_class zero;
 
 	vector<NTL::ZZ> encrypt_vector(const DataInstance& sample);
-	vector<mpz_class> encode_class(unsigned int class_id);
+	mpz_class encode_class(unsigned int class_id);
 	EncryptedDataInstance encrypt_training_instance(const DataInstance& sample);
 	void encrypt_training_data(vector<DataInstance> data);
 	void encrypt_testing_data(vector<DataInstance> data);

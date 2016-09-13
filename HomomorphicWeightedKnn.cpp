@@ -29,7 +29,7 @@ double inverse_of(ZZ number){
 	return conv<double>(1.0 / number_RR);
 }
 
-vector<mpz_class> HomomorphicWeightedKnn::encode_weight(EncryptedDataInstance instance, double total){
+mpz_class HomomorphicWeightedKnn::encode_weight(EncryptedDataInstance instance, double total){
 	double weight;
 	if (instance.get_distance() == 0){
 		weight = 0.0000001;
@@ -39,25 +39,16 @@ vector<mpz_class> HomomorphicWeightedKnn::encode_weight(EncryptedDataInstance in
 	weight /= total;
 
 	long int w = weight * FACTOR_TO_INT;
-	vector<mpz_class> encoded_weight(number_of_classes, w);
+	mpz_class encoded_weight(w);
 	return encoded_weight;
 }
 
-vector<mpz_class> homomorphic_product_component_wise(const vector<mpz_class>& encrypted_class, const vector<mpz_class>& encoded_weight, Paillier& paillier){
-	unsigned int _N = encoded_weight.size();
-	vector<mpz_class> result(_N);
-	for (unsigned int i = 0; i < _N; i++){
-		result[i] = paillier.mul(encrypted_class[i], encoded_weight[i]);
-	}
-	return result;
-}
-
-vector<mpz_class> HomomorphicWeightedKnn::accumulate_classes(){
+mpz_class HomomorphicWeightedKnn::accumulate_classes(){
 	double total = sum_of_inverse_distances();
-	vector<mpz_class> class_assigned = homomorphic_product_component_wise(instances[0].get_class(), encode_weight(instances[0], total), paillier);
+	mpz_class class_assigned = paillier.mul(instances[0].get_class(), encode_weight(instances[0], total));
 	for (unsigned int i = 1; i < k; i++){
-		vector<mpz_class> encoded_weight = encode_weight(instances[i], total);
-		encoded_weight = homomorphic_product_component_wise(instances[i].get_class(), encoded_weight, paillier);
+		mpz_class encoded_weight = encode_weight(instances[i], total);
+		encoded_weight = paillier.mul(instances[i].get_class(), encoded_weight);
 		class_assigned = paillier.add(class_assigned, encoded_weight);
 	}
 	return class_assigned;
@@ -76,12 +67,12 @@ double HomomorphicWeightedKnn::sum_of_inverse_distances(){
 }
 
 HomomorphicWeightedKnn::HomomorphicWeightedKnn(unsigned int _k, const vector<EncryptedDataInstance>& _data, Paillier& public_key) 
-	: k(_k), instances(_data), paillier(public_key), number_of_classes(_data[0].get_class().size()) {
+	: k(_k), instances(_data), paillier(public_key) {
 
 }
 
 
-vector<mpz_class> HomomorphicWeightedKnn::classify(const EncryptedDataInstance& query){
+mpz_class HomomorphicWeightedKnn::classify(const EncryptedDataInstance& query){
 	compute_all_distances(query);
 	sort_by_distance();
 	return accumulate_classes();
