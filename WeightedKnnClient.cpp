@@ -1,7 +1,8 @@
 #include "lib/ope/lib/ope.hh"
-#include "lib/yashe/src/Yashe.h"
 #include "lib/yashe/src/vectorutils.h"
 #include "lib/yashe/src/timing.h"
+
+#include "lib/paillier/src/Paillier.h"
 
 #include"Dataset.h"
 #include"EncryptedDataset.h"
@@ -13,57 +14,23 @@
 using namespace NTL;
 using namespace std;
 
-
-/******************************************************************************
- * 		FIVE CLASS   (  =>  number of slots = 5)
- * 		K = 9  (  =>  t_i >= 18)
- ******************************************************************************/
-vector<fmpzxx> ts = {fmpzxx("32"), fmpzxx("27"), fmpzxx("19"), fmpzxx("23"), fmpzxx("29")};
-
-
-
-// -------------------------------------------------------------------------------
-// --------- PARAMS FOR L = 2 (or L=1) WITH t = 350064 (about 2**19) --------------------------------
-// -------------------------------------------------------------------------------
-const struct YASHEParams params_k9_class5 = { 
-//	4793, // n = 4793  (totient(n) = 4972 is the degree of the cyclotomic polynomial) L=2
-	3109, // n = 3109  (totient(n) = 3108 is the degree of the cyclotomic polynomial) L=1
-	1,  // Key distribution's standard deviation
-	8,  // Error distribution's standard deviation
-//	fmpzxx("196159429230833773869868419475239575503198607639501078831"), // q  (188-bit prime) L=2
-	fmpzxx("1267650600228229401496703205653"), // q  (100-bit prime)   Ciphertext: ring R/qR   L=1
-//	fmpzxx("21267647932558653966460912964485513283"), // q  (124-bit prime)   Ciphertext: ring R/qR   L=1
-//	fmpzxx("350064") // t = 16*9*11*13*17 
-	fmpzxx("10949472") // t = 32*27*19*23*29
-};
-
-
-// -------------------------------------------------------------------------------
-// --------- PARAMS FOR L = 4 WITH t = 2**32 (4294967296) --------------------------------
-// -------------------------------------------------------------------------------
-const struct YASHEParams params_L4_t2to32 = { 
-	16384, // n = 2**14  (totient(n) = 2**13 is the degree of the cyclotomic polynomial)
-	1,  // Key distribution's standard deviation
-	8,  // Error distribution's standard deviation
-	fmpzxx("2839213766779714416208296124562517712318911565184836172974571090549372219192960637992933791850638927971728600024477257552869537611963"), // q  (440-bit prime)   Ciphertext: ring R/qR 
-	fmpzxx("4294967296") // t: Cleartext:  ring R/(moduli)R  (for instance, if t = 7, R/7R) 
-};
-
-int decrypt_assigned_class(const RealNumberCiphertext& enc_class, Yashe& yashe, CoefficientwiseCRT& crt){
-	vector<Plaintext> unpacked_class = crt.unpack(yashe.decrypt(enc_class));
-	unsigned int assigned_class = 0;
-	double max_value = -1;
-	for (unsigned int i = 0; i < unpacked_class.size(); i++){
-		yashe.t = ts[i];
-		double value = yashe.decode(RealNumberPlaintext(unpacked_class[i], 64));
-		if (value > max_value){
-			max_value = value;
-			assigned_class = i;
+int decrypt_assigned_class(paillier::Ciphertext enc_class, paillier::Paillier& paillier, unsigned int number_of_classes, unsigned int gap, mpz_class two_to_gap){
+	mpz_class plain_class = paillier.dec(enc_class);
+	int index_max = 0;
+	mpz_class value_max = plain_class % two_to_gap;
+	for (int i = 1; i < number_of_classes; i++){
+//		mpz_class tmp = (plain_class >> i*gap) % gap;
+		mpz_class tmp;
+		mpz_tdiv_q_2exp(tmp.get_mpz_t(), plain_class.get_mpz_t(), i*gap);
+		tmp = tmp % two_to_gap;
+		if (tmp > value_max){
+			index_max = i;
+			value_max = tmp;
 		}
 	}
-	yashe.t = crt.get_modulus();
-	return assigned_class;
+	return index_max;
 }
+
 
 int main(int argc, char **argv) {
 	
@@ -83,32 +50,22 @@ int main(int argc, char **argv) {
 	unsigned int C = 33;
 	OPE ope("A__v3Ry $TR0NG Key", P, C);
 
-	Yashe* yashe;
-	string fileName("keys/L2_k9_class5.keys");
-	std::ifstream inFile(fileName);
-	if (inFile.good()){
-		cout << "Loading yashe." << endl;
-		yashe = new Yashe(fileName);
-	}else{
-		cout << "Generating keys." << endl;
-		yashe = new Yashe(params_k9_class5);
-		yashe->serialize(fileName);	
-		cout << "Keys saved in " << fileName << endl;
-	} 
+	cout << "Generating keys." << endl;
+	paillier::Paillier paillier(1024);
+	cout << "Keys generated" << endl;
 
-	fmpz_mod_polyxx cyclotomic = yashe->get_phi();
+	unsigned int gap = 64;
+	mpz_class two_to_gap("18446744073709551616");
+
 
 	Dataset data(dataset_name);
 	cout << data << endl;
 
-	CoefficientwiseCRT crt(ts, cyclotomic); 
-
 	timing timing;
 
-	EncryptedDataset enc_data(data, ope, *yashe, crt);
+	EncryptedDataset enc_data(data, ope, paillier);
 
-	//cout << "BEGIN: sending encrypted data to the cloud...." << endl;
-	HomomorphicWeightedKnn knn(k, enc_data.training_data, *yashe, crt);
+	HomomorphicWeightedKnn knn(k, enc_data.training_data, paillier);
 
 	unsigned int right = 0;
 	unsigned int wrong = 0;
@@ -116,9 +73,9 @@ int main(int argc, char **argv) {
 
 	for (unsigned int j = 0; j < total_test_cases; j++){
 		timing.start();
-		RealNumberCiphertext encrypted_class = knn.classify(enc_data.testing_data[j]);
+		paillier::Ciphertext encrypted_class = knn.classify(enc_data.testing_data[j]);
 		timing.stop("time homomorphic classification");
-		unsigned int assigned_class = decrypt_assigned_class(encrypted_class, *yashe, crt);
+		unsigned int assigned_class = decrypt_assigned_class(encrypted_class, paillier, data.number_of_classes, gap, two_to_gap);
 		cout << "instance #"<< j << ": assigned class: " << assigned_class << endl; 
 		cout << "instance #"<< j << ": expected class: " << data.testing_data[j].get_class() << endl;
 		cout << endl;
