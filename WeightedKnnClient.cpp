@@ -5,7 +5,7 @@
 #include "lib/paillier/src/Paillier.h"
 
 #include"Dataset.h"
-#include"EncryptedDataset.h"
+#include"EncryptedDatasetWeighted.h"
 #include"EncryptedDataInstance.h"
 #include"HomomorphicWeightedKnn.h"
 
@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
 
 	timing timing;
 
-	EncryptedDataset enc_data(data, ope, paillier);
+	EncryptedDatasetWeighted enc_data(data, ope, paillier);
 
 	HomomorphicWeightedKnn knn(k, enc_data.training_data, paillier);
 

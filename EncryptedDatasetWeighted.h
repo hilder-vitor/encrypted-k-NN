@@ -1,5 +1,5 @@
-#ifndef YASHE__ENC___DATASET__CLASS
-#define YASHE__ENC___DATASET__CLASS
+#ifndef KNN__ENC___DATASET__CLASS
+#define KNN__ENC___DATASET__CLASS
 
 /*
    Class to model a dataset to HomomorphickNN
@@ -18,7 +18,7 @@
 
 #include <NTL/ZZ.h>
 
-class EncryptedDataset_Unweighted {
+class EncryptedDatasetWeighted {
     
 	private:
 	OPE& ope;
@@ -36,7 +36,7 @@ class EncryptedDataset_Unweighted {
 	std::vector<EncryptedDataInstance> training_data; // Data instances whose classes are already know
 	std::vector<EncryptedDataInstance> testing_data; // Data instances used to verify the accuracy of the classifier
 
-	EncryptedDataset_Unweighted(const Dataset& plain_dataset, OPE& ope, paillier::Paillier& paillier);
+	EncryptedDatasetWeighted(const Dataset& plain_dataset, OPE& ope, paillier::Paillier& paillier);
 
 	unsigned int number_of_training_instances();
 	unsigned int number_of_testing_instances();
@@ -44,6 +44,6 @@ class EncryptedDataset_Unweighted {
 	unsigned int instances_dimensions();
 };
 
-std::ostream& operator<<(std::ostream&, const EncryptedDataset_Unweighted&);
+std::ostream& operator<<(std::ostream&, const EncryptedDatasetWeighted&);
 
 #endif

@@ -1,5 +1,5 @@
 /*
-   Class to model a dataset to HomomorphickNN
+   Class to model a dataset to HomomorphickNN (uniform)
 */
 
 #include "EncryptedDataset.h"
@@ -32,8 +32,6 @@ mpz_class EncryptedDataset::encode_class(unsigned int i){
 	return position;
 }
 
-
-
 EncryptedDataInstance EncryptedDataset::encrypt_training_instance(const DataInstance& sample){
 	vector<ZZ> data = encrypt_vector(sample);
 	paillier::Ciphertext enc_class = paillier.enc(encode_class(sample.get_class()));
@@ -55,13 +53,11 @@ void EncryptedDataset::encrypt_testing_data(vector<DataInstance> data){
 	}
 }
 
-
 EncryptedDataset::EncryptedDataset(const Dataset& plain_dataset, OPE& _ope, paillier::Paillier& _paillier)
 	: ope(_ope), paillier(_paillier), number_of_classes(plain_dataset.number_of_classes) {
-
+	
 	mpz_class plain_zero(0);
 	zero = paillier.enc(plain_zero);
-
 	timing tm;
 	tm.start();
 	encrypt_training_data(plain_dataset.training_data);
@@ -75,7 +71,6 @@ EncryptedDataset::EncryptedDataset(const Dataset& plain_dataset, OPE& _ope, pail
 		std::cout << "FAIL: training data and testing data do not have the same number of variables of interest." << std::endl;
 		exit(4);
 	}
-
 }
 
 

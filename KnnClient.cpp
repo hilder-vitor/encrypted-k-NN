@@ -3,7 +3,7 @@
 #include "lib/yashe/src/timing.h"
 
 #include"Dataset.h"
-#include"EncryptedDataset_Unweighted.h"
+#include"EncryptedDataset.h"
 #include"EncryptedDataInstance.h"
 #include"HomomorphicKnn.h"
 
@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
 	cout << data << endl;
 
 	timing timing;
-	EncryptedDataset_Unweighted enc_data(data, ope, paillier);
+	EncryptedDataset enc_data(data, ope, paillier);
 
 	HomomorphicKnn knn(k, enc_data.training_data, paillier);
 

@@ -1,5 +1,5 @@
-#ifndef YASHE__ENC___DATASET__CLASS
-#define YASHE__ENC___DATASET__CLASS
+#ifndef KNN__ENC___DATASET__CLASS
+#define KNN__ENC___DATASET__CLASS
 
 /*
    Class to model a dataset to HomomorphickNN

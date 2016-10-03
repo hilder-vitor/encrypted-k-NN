@@ -1,14 +1,14 @@
 /*
-   Class to model a dataset to HomomorphickNN
+   Class to model a dataset to HomomorphicWeightedkNN
 */
 
-#include "EncryptedDataset_Unweighted.h"
+#include "EncryptedDatasetWeighted.h"
 #include "lib/yashe/src/vectorutils.h"
 
 using namespace NTL;
 using namespace std;
 
-vector<ZZ> EncryptedDataset_Unweighted::encrypt_vector(const DataInstance& sample){
+vector<ZZ> EncryptedDatasetWeighted::encrypt_vector(const DataInstance& sample){
 	vector<ZZ> data;
 	unsigned int P = sample.size();
 	for (unsigned int i = 0; i < P; i++){
@@ -20,7 +20,7 @@ vector<ZZ> EncryptedDataset_Unweighted::encrypt_vector(const DataInstance& sampl
 /** XXX:  hardcoded 64 should be <gap>
  *  XXX:  it can be improved pre-calculating all the possible encoded values. 
  */
-mpz_class EncryptedDataset_Unweighted::encode_class(unsigned int i){
+mpz_class EncryptedDatasetWeighted::encode_class(unsigned int i){
 	if (i >= number_of_classes){
 		cerr << "trying to encode value " << i << ", which is greater than the number of classes " << number_of_classes << endl;
 		exit(5);
@@ -32,20 +32,22 @@ mpz_class EncryptedDataset_Unweighted::encode_class(unsigned int i){
 	return position;
 }
 
-EncryptedDataInstance EncryptedDataset_Unweighted::encrypt_training_instance(const DataInstance& sample){
+
+
+EncryptedDataInstance EncryptedDatasetWeighted::encrypt_training_instance(const DataInstance& sample){
 	vector<ZZ> data = encrypt_vector(sample);
 	paillier::Ciphertext enc_class = paillier.enc(encode_class(sample.get_class()));
 	return EncryptedDataInstance(sample.get_id(), data, enc_class);
 }
 
-void EncryptedDataset_Unweighted::encrypt_training_data(vector<DataInstance> data){
+void EncryptedDatasetWeighted::encrypt_training_data(vector<DataInstance> data){
 	unsigned int N = data.size();
 	for (unsigned int i = 0; i < N; i++){
 		training_data.push_back(encrypt_training_instance(data[i]));
 	}
 }
 
-void EncryptedDataset_Unweighted::encrypt_testing_data(vector<DataInstance> data){
+void EncryptedDatasetWeighted::encrypt_testing_data(vector<DataInstance> data){
 	unsigned int N = data.size();
 	for (unsigned int i = 0; i < N; i++){
 		EncryptedDataInstance edi(data[i].get_id(), encrypt_vector(data[i]), zero);
@@ -53,11 +55,13 @@ void EncryptedDataset_Unweighted::encrypt_testing_data(vector<DataInstance> data
 	}
 }
 
-EncryptedDataset_Unweighted::EncryptedDataset_Unweighted(const Dataset& plain_dataset, OPE& _ope, paillier::Paillier& _paillier)
+
+EncryptedDatasetWeighted::EncryptedDatasetWeighted(const Dataset& plain_dataset, OPE& _ope, paillier::Paillier& _paillier)
 	: ope(_ope), paillier(_paillier), number_of_classes(plain_dataset.number_of_classes) {
-	
+
 	mpz_class plain_zero(0);
 	zero = paillier.enc(plain_zero);
+
 	timing tm;
 	tm.start();
 	encrypt_training_data(plain_dataset.training_data);
@@ -71,22 +75,23 @@ EncryptedDataset_Unweighted::EncryptedDataset_Unweighted(const Dataset& plain_da
 		std::cout << "FAIL: training data and testing data do not have the same number of variables of interest." << std::endl;
 		exit(4);
 	}
+
 }
 
 
-unsigned int EncryptedDataset_Unweighted::number_of_training_instances(){
+unsigned int EncryptedDatasetWeighted::number_of_training_instances(){
 	return training_data.size();
 }
 
-unsigned int EncryptedDataset_Unweighted::number_of_testing_instances(){
+unsigned int EncryptedDatasetWeighted::number_of_testing_instances(){
 	return testing_data.size();
 }
 
-unsigned int EncryptedDataset_Unweighted::instances_dimensions(){
+unsigned int EncryptedDatasetWeighted::instances_dimensions(){
 	return training_data[0].size();
 }
 
-std::ostream& operator<<(std::ostream& os, const EncryptedDataset_Unweighted& data){
+std::ostream& operator<<(std::ostream& os, const EncryptedDatasetWeighted& data){
 	unsigned int N = data.training_data.size();
 	unsigned int P = data.training_data[0].size();
 	os << "Training:  (" << N << "x" << P << ")" << endl;
