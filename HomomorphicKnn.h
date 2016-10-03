@@ -12,19 +12,19 @@ class HomomorphicKnn {
     private:
 	unsigned int k;
 	std::vector<EncryptedDataInstance> instances;
-	Paillier& paillier;
+	paillier::Paillier& paillier;
 
 	// auxiliar functions
 	void compute_all_distances(const EncryptedDataInstance& query);
 	void sort_by_distance();
 	double sum_of_inverse_distances();
-	mpz_class accumulate_classes(); // vector of (Paillier) ciphertexts
+	paillier::Ciphertext accumulate_classes(); // vector of (Paillier) ciphertexts
 
     public:
 
-	HomomorphicKnn(unsigned int _k, const std::vector<EncryptedDataInstance>& _data, Paillier& pk);
+	HomomorphicKnn(unsigned int _k, const std::vector<EncryptedDataInstance>& _data, paillier::Paillier& pk);
 
-	mpz_class classify(const EncryptedDataInstance& query);
+	paillier::Ciphertext classify(const EncryptedDataInstance& query);
 
 	void set_k(unsigned int neighbourhood_size);
 

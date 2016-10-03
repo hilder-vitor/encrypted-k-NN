@@ -13,7 +13,7 @@ using namespace NTL;
 using namespace std;
 
 
-int decrypt_assigned_class(mpz_class enc_class, Paillier& paillier, unsigned int number_of_classes, unsigned int gap, mpz_class two_to_gap){
+int decrypt_assigned_class(paillier::Ciphertext enc_class, paillier::Paillier& paillier, unsigned int number_of_classes, unsigned int gap, mpz_class two_to_gap){
 	mpz_class plain_class = paillier.dec(enc_class);
 	int index_max = 0;
 	mpz_class value_max = plain_class % two_to_gap;
@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
 	OPE ope("A_ v3Ry $TR0NG Key", P, C);
 
 	cout << "Generating keys." << endl;
-	Paillier paillier(2048);
+	paillier::Paillier paillier(1024);
 	cout << "Keys generated." << endl;
 
 	unsigned int gap = 64;
@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
 
 	for (unsigned int j = 0; j < total_test_cases; j++){
 		timing.start();
-		mpz_class encrypted_class = knn.classify(enc_data.testing_data[j]);
+		paillier::Ciphertext encrypted_class = knn.classify(enc_data.testing_data[j]);
 		timing.stop("time homomorphic classification");
 		unsigned int assigned_class = decrypt_assigned_class(encrypted_class, paillier, data.number_of_classes, gap, two_to_gap);
 		cout << "instance #"<< j << ": assigned class: " << assigned_class << endl; 

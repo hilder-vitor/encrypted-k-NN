@@ -36,7 +36,7 @@ mpz_class EncryptedDataset::encode_class(unsigned int i){
 
 EncryptedDataInstance EncryptedDataset::encrypt_training_instance(const DataInstance& sample){
 	vector<ZZ> data = encrypt_vector(sample);
-	mpz_class enc_class = paillier.enc(encode_class(sample.get_class()));
+	paillier::Ciphertext enc_class = paillier.enc(encode_class(sample.get_class()));
 	return EncryptedDataInstance(sample.get_id(), data, enc_class);
 }
 
@@ -56,7 +56,7 @@ void EncryptedDataset::encrypt_testing_data(vector<DataInstance> data){
 }
 
 
-EncryptedDataset::EncryptedDataset(const Dataset& plain_dataset, OPE& _ope, Paillier& _paillier)
+EncryptedDataset::EncryptedDataset(const Dataset& plain_dataset, OPE& _ope, paillier::Paillier& _paillier)
 	: ope(_ope), paillier(_paillier), number_of_classes(plain_dataset.number_of_classes) {
 
 	mpz_class plain_zero(0);

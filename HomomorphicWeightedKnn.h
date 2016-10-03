@@ -1,5 +1,5 @@
-#ifndef __HEKNN__CLOUD_
-#define __HEKNN__CLOUD_
+#ifndef __HEWKNN__CLOUD_
+#define __HEWKNN__CLOUD_
 
 #include <vector>
 #include <iostream>
@@ -13,22 +13,22 @@ class HomomorphicWeightedKnn {
     private:
 	unsigned int k;
 	std::vector<EncryptedDataInstance> instances;
-	Paillier& paillier;
+	paillier::Paillier& paillier;
 
 	// auxiliar functions
 	void compute_all_distances(const EncryptedDataInstance& query);
 	void sort_by_distance();
 	double sum_of_inverse_distances();
-	mpz_class accumulate_classes();
+	paillier::Ciphertext accumulate_classes();
 
 	mpz_class encode_weight(EncryptedDataInstance instance, double total);
 	
     
     public:
 
-	HomomorphicWeightedKnn(unsigned int _k, const std::vector<EncryptedDataInstance>& _data, Paillier& pk);
+	HomomorphicWeightedKnn(unsigned int _k, const std::vector<EncryptedDataInstance>& _data, paillier::Paillier& pk);
 
-	mpz_class classify(const EncryptedDataInstance& query);
+	paillier::Ciphertext classify(const EncryptedDataInstance& query);
 
 	void set_k(unsigned int neighbourhood_size);
 

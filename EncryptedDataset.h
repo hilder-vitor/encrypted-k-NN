@@ -22,9 +22,9 @@ class EncryptedDataset {
     
 	private:
 	OPE& ope;
-	Paillier& paillier;
+	paillier::Paillier& paillier;
 	unsigned int number_of_classes;
-	mpz_class zero;
+	paillier::Ciphertext zero;
 
 	vector<NTL::ZZ> encrypt_vector(const DataInstance& sample);
 	mpz_class encode_class(unsigned int class_id);
@@ -36,7 +36,7 @@ class EncryptedDataset {
 	std::vector<EncryptedDataInstance> training_data; // Data instances whose classes are already know
 	std::vector<EncryptedDataInstance> testing_data; // Data instances used to verify the accuracy of the classifier
 
-	EncryptedDataset(const Dataset& plain_dataset, OPE& ope, Paillier& paillier);
+	EncryptedDataset(const Dataset& plain_dataset, OPE& ope, paillier::Paillier& paillier);
 
 	unsigned int number_of_training_instances();
 	unsigned int number_of_testing_instances();

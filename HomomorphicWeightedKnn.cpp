@@ -43,13 +43,13 @@ mpz_class HomomorphicWeightedKnn::encode_weight(EncryptedDataInstance instance, 
 	return encoded_weight;
 }
 
-mpz_class HomomorphicWeightedKnn::accumulate_classes(){
+paillier::Ciphertext HomomorphicWeightedKnn::accumulate_classes(){
 	double total = sum_of_inverse_distances();
-	mpz_class class_assigned = paillier.mul(instances[0].get_class(), encode_weight(instances[0], total));
+	paillier::Ciphertext class_assigned = paillier.mul(instances[0].get_class(), encode_weight(instances[0], total));
 	for (unsigned int i = 1; i < k; i++){
 		mpz_class encoded_weight = encode_weight(instances[i], total);
-		encoded_weight = paillier.mul(instances[i].get_class(), encoded_weight);
-		class_assigned = paillier.add(class_assigned, encoded_weight);
+		paillier::Ciphertext enc_encoded_weight = paillier.mul(instances[i].get_class(), encoded_weight);
+		class_assigned = paillier.add(class_assigned, enc_encoded_weight);
 	}
 	return class_assigned;
 }
@@ -66,13 +66,13 @@ double HomomorphicWeightedKnn::sum_of_inverse_distances(){
 	return total;
 }
 
-HomomorphicWeightedKnn::HomomorphicWeightedKnn(unsigned int _k, const vector<EncryptedDataInstance>& _data, Paillier& public_key) 
+HomomorphicWeightedKnn::HomomorphicWeightedKnn(unsigned int _k, const vector<EncryptedDataInstance>& _data, paillier::Paillier& public_key) 
 	: k(_k), instances(_data), paillier(public_key) {
 
 }
 
 
-mpz_class HomomorphicWeightedKnn::classify(const EncryptedDataInstance& query){
+paillier::Ciphertext HomomorphicWeightedKnn::classify(const EncryptedDataInstance& query){
 	compute_all_distances(query);
 	sort_by_distance();
 	return accumulate_classes();

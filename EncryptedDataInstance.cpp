@@ -2,8 +2,9 @@
 
 using namespace std;
 using namespace NTL;
+using namespace paillier;
 
-EncryptedDataInstance::EncryptedDataInstance(int _id, const std::vector<ZZ>& _data, const mpz_class& _class) : id(_id), data(_data), label(_class), distance(to_ZZ(-1)){
+EncryptedDataInstance::EncryptedDataInstance(int _id, const std::vector<ZZ>& _data, const paillier::Ciphertext& _class) : id(_id), data(_data), label(_class), distance(to_ZZ(-1)){
 }
 
 void EncryptedDataInstance::set_distance(const EncryptedDataInstance& query){
@@ -22,7 +23,7 @@ int EncryptedDataInstance::get_id() const{
 	return id;
 }
 
-mpz_class EncryptedDataInstance::get_class() const{
+paillier::Ciphertext EncryptedDataInstance::get_class() const{
 	return label;
 }
 
@@ -51,6 +52,6 @@ std::ostream& operator<<(std::ostream& os, const EncryptedDataInstance& v){
 		}
 		os << v[P - 1] << "]";
 	}
-	os << " class: " << v.get_class() << endl;
+	os << " class: " << v.get_class().a << ", " << v.get_class().b << endl;
 	return os;
 }

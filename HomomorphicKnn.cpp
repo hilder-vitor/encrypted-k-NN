@@ -23,20 +23,20 @@ void HomomorphicKnn::sort_by_distance(){
 	sort(instances.begin(), instances.end());
 }
 
-mpz_class HomomorphicKnn::accumulate_classes(){
-	mpz_class class_assigned = instances[0].get_class();
+paillier::Ciphertext HomomorphicKnn::accumulate_classes(){
+	paillier::Ciphertext class_assigned = instances[0].get_class();
 	for (unsigned int i = 1; i < k; i++){
 		class_assigned = paillier.add(class_assigned, instances[i].get_class());
 	}
 	return class_assigned;
 }
 
-HomomorphicKnn::HomomorphicKnn(unsigned int _k, const vector<EncryptedDataInstance>& _data, Paillier& public_key) 
+HomomorphicKnn::HomomorphicKnn(unsigned int _k, const vector<EncryptedDataInstance>& _data, paillier::Paillier& public_key) 
 	: k(_k), instances(_data), paillier(public_key) {
 	
 }
 
-mpz_class HomomorphicKnn::classify(const EncryptedDataInstance& query){
+paillier::Ciphertext HomomorphicKnn::classify(const EncryptedDataInstance& query){
 	compute_all_distances(query);
 	sort_by_distance();
 	return accumulate_classes();
