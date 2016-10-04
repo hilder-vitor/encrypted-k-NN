@@ -10,9 +10,6 @@ LDFLAGS=-L/opt/local/lib/  -L/home/vitor/mylibs/flint/lib/ -L/home/vitor/mylibs/
 all: $(DOT_O) knn wknn
 
 
-example: test_neighborhood_several_distributions.cpp $(DIR_OPE)ope.a
-	 g++ test_neighborhood_several_distributions.cpp  $(DIR_OPE)ope.a -std=c++11 $(LDFLAGS) -o test_distributions
-
 DataInstance.o: DataInstance.cpp DataInstance.h
 	g++ -c DataInstance.cpp -std=c++11  -o DataInstance.o $(CXXFLAGS) $(LDFLAGS)
 
@@ -51,6 +48,5 @@ $(DIR_OPE)ope.a:
 	make -C $(DIR_OPE)
 
 clean:
-	rm -f test_distributions main
-	rm -f $(DOT_O)
+	rm -f $(DOT_O) knn wknn
 	make clean -C $(DIR_OPE)
