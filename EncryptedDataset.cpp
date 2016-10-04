@@ -21,7 +21,7 @@ vector<ZZ> EncryptedDataset::encrypt_vector(const DataInstance& sample){
  *  XXX:  it can be improved pre-calculating all the possible encoded values. 
  */
 mpz_class EncryptedDataset::encode_class(unsigned int i){
-	if (i >= number_of_classes){
+	if (i > number_of_classes){
 		cerr << "trying to encode value " << i << ", which is greater than the number of classes " << number_of_classes << endl;
 		exit(5);
 	}

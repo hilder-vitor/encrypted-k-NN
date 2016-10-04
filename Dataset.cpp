@@ -76,8 +76,8 @@ Dataset::Dataset(const std::string& filename){
 		std::cout << "FAIL: training data and testing data do not have the same number of variables of interest." << std::endl;
 		exit(4);
 	}
-	unsigned int classes = max_class(training_data) + 1;
-	number_of_classes = max_class(testing_data) + 1;
+	unsigned int classes = max_class(training_data);
+	number_of_classes = max_class(testing_data);
 	if (classes > number_of_classes){
 		number_of_classes = classes;
 	}
