@@ -24,17 +24,12 @@ void HomomorphicWeightedKnn::sort_by_distance(){
 	sort(instances.begin(), instances.end());
 }
 
-double inverse_of(ZZ number){
-	RR number_RR = MakeRR(number, 0);
-	return conv<double>(1.0 / number_RR);
-}
-
 mpz_class HomomorphicWeightedKnn::encode_weight(EncryptedDataInstance instance, double total){
 	double weight;
 	if (instance.get_distance() == 0){
 		weight = 0.0000001;
 	}else{
-		weight = inverse_of(instance.get_distance());
+		weight = 1.0 / instance.get_distance();
 	}
 	weight /= total;
 
@@ -60,7 +55,7 @@ double HomomorphicWeightedKnn::sum_of_inverse_distances(){
 		if (instances[i].get_distance() == 0){
 			total += 1.0 / 0.0000001;
 		}else{
-			total += inverse_of(instances[i].get_distance());
+			total += 1.0 / instances[i].get_distance();
 		}
 	}
 	return total;

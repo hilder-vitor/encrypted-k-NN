@@ -10,17 +10,17 @@
 
 class EncryptedDataInstance {
     private:
-	std::vector<NTL::ZZ> data;
+	std::vector<long int> data;
 	int id;
 	paillier::Ciphertext label; // the class assigned to this data_instance
-	NTL::ZZ distance; // the distance to the query vector
+	double distance; // the distance to the query vector
     
     public:
 
 	EncryptedDataInstance(int id, const std::vector<NTL::ZZ>& data, const paillier::Ciphertext& _class);
 
 	void set_distance(const EncryptedDataInstance& query);
-	NTL::ZZ get_distance() const;
+	double get_distance() const;
 
 	int get_id() const;
 	paillier::Ciphertext get_class() const;
@@ -29,7 +29,7 @@ class EncryptedDataInstance {
 
 	bool operator<(const EncryptedDataInstance&) const;
 	
-	const NTL::ZZ& operator[](const int&) const;
+	const long int& operator[](const int&) const;
 };	
 
 std::ostream& operator<<(std::ostream&, const EncryptedDataInstance&);
