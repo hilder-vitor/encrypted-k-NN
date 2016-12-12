@@ -12,19 +12,21 @@ fi
 for base in abalone climate credit iris wall wine
 do
 	echo $base
-	for ((i = 1; i <= 9; i+= 2))
+	for ((k = 1; k <= 9; k+= 2))
 	do
-		echo "i = $i"
-		./knn datasets/$base/$base".data" $i > results_paillier_crt/uniform/"$base"_$i;
+		echo "k = $k"
+		python knn.py -m uniform -f datasets/$base/$base".data" -k $k
+		./knn datasets/$base/$base".data" $k > results_paillier_crt/uniform/"$base"_$k;
 	done
 done
 
 for base in abalone climate credit iris wall wine
 do
 	echo $base
-	for ((i = 1; i <= 9; i+= 2))
+	for ((k = 1; k <= 9; k+= 2))
 	do
-		echo "i = $i"
-		./wknn datasets/$base/$base".data" $i > results_paillier_crt/weighted/"$base"_$i;
+		echo "k = $k"
+		python knn.py -m distance -f datasets/$base/$base".data" -k $k
+		./wknn datasets/$base/$base".data" $k > results_paillier_crt/weighted/"$base"_$k;
 	done
 done
